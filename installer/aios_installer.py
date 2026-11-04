@@ -125,8 +125,9 @@ def private_write(path: Path, text: str) -> None:
 
 def to_terminal(run, o: dict) -> None:
     """Switch to the dialog in a Terminal window (spec 03, Ausweg Terminal)."""
-    workdir = Path(o["cleanup"]) if o["cleanup"] else run.workdir
-    script = workdir / "AIOS-Installer.command"
+    if not o["cleanup"]:                   # started without the formula: own folder, removed by tui
+        o["cleanup"] = tempfile.mkdtemp(prefix="aios-installer.")
+    script = Path(o["cleanup"]) / "AIOS-Installer.command"
     lines = ["#!/bin/sh", 'printf "\\033]0;AIOS-Installer\\007"']
     cmd = [sys.executable, "-I", os.path.abspath(__file__), "tui", o["dist"], o["commit"], "--home", o["home"]]
     if o["cleanup"]:
