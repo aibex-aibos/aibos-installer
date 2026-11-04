@@ -14,6 +14,6 @@ Implementierungsplan: Konzept-Repo `AA-AIbex-AIOS`, `@Memo/Installer/18`, freige
 | 7 | Testschalter und Release (`t07`, `t08`) | ☑ | Schritt 7 |
 | 8 | Probe mit iHux | ☑ | Probe-Commits `b50d64e`–Memo 28 (Konzept-Repo `@Memo/Installer/21–28`) |
 | 9 | Capricorn 0.4.1 | ☑ | `distribution-capricorn` `78627b9` (0.4.1-rc1, lokal; Platzhalter bis Schritt 10) |
-| 10 | Kandidaten nach außen | ☐ | |
+| 10 | Kandidaten nach außen | ☑ | Repo `aibex-aios/aios-installer` öffentlich; Tag `v0.1.0-rc1` (`4fcf0d6`), Prerelease mit Asset; Capricorn `v0.4.1-rc1` (`9a9e584`) |
 
 Stand nach Schritt 7: `tests/run` mit 197 Prüfungen in `t01`–`t08` ohne Fehler (etwa 80 s).
