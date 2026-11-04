@@ -49,5 +49,16 @@
   "end_failed": "That did not work: {message}",
   "end_timeout": "Time is up. Start the installation again if you want to continue.",
   "tui_choice": "Choice",
-  "tui_wait": "Please wait …"
+  "tui_wait": "Please wait …",
+  "err_parent_create": "The folder {parent} does not exist. Shall it be created? It is created only after your final consent on page 4.",
+  "p3_create": "Create folder and continue",
+  "run_prepare": "Preparing the plan …",
+  "run_total": "Running for {t}.",
+  "ph_clone": "Fetch the kernel",
+  "ph_plan_kernel": "Plan of the kernel",
+  "ph_install_kernel": "Install the kernel",
+  "ph_plan_dist": "Plan of the distribution",
+  "ph_mkdir": "Create folders",
+  "ph_install_dist": "Install the distribution (workhorses, packages, skills)",
+  "tui_create": "Create? [y/N] "
 }

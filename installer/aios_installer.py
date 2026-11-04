@@ -229,6 +229,9 @@ def cmd_tui(o: dict) -> int:
                 print(f"** {p['error']}")
             for para in p["paras"]:
                 print("\n" + para)
+            marks = {"done": "[x]", "run": "[~]", "todo": "[ ]"}
+            for label, state, secs in p["phases"]:
+                print(f"   {marks[state]} {label}" + (f"  {secs // 60}:{secs % 60:02d}" if secs is not None else ""))
             if p["pre"]:
                 print("\n" + p["pre"])
             if run.step == "end":
@@ -237,6 +240,10 @@ def cmd_tui(o: dict) -> int:
                 time.sleep(2)
                 continue
             fields = {}
+            if p["offer_parent"]:
+                if input(run.t("tui_create")).strip().lower() in ("j", "y", "ja", "yes"):
+                    run.decide("3", "create", dict(run.form))
+                    continue
             if p["form"] == "agree":
                 fields["agree"] = "on" if input(f"\n{run.t('p2_check')}? [j/y/N] ").strip().lower() in ("j", "y", "ja", "yes") else ""
             elif p["form"] == "workspace":

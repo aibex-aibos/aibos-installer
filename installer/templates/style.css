@@ -17,3 +17,11 @@ input[type=text], input:not([type]), select { font: inherit; padding: .3rem .4re
 .buttons { margin: 1.5rem 0 3rem; display: flex; gap: .8rem; flex-wrap: wrap; }
 button { font: inherit; padding: .5rem 1.2rem; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: var(--bg); cursor: pointer; }
 button.secondary { background: transparent; color: var(--fg); border-color: var(--line); }
+ul.phases { list-style: none; padding: 0; margin: 1rem 0; }
+ul.phases li { padding: .2rem 0; color: var(--muted); }
+ul.phases li.done { color: var(--fg); }
+ul.phases li.run { color: var(--accent); font-weight: 600; }
+ul.phases .time { font-weight: 400; color: var(--muted); margin-left: .4rem; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin: .5rem 0 1rem; }
+.bar span { display: block; height: 100%; width: 30%; background: var(--accent); border-radius: 3px; animation: slide 1.6s ease-in-out infinite; }
+@keyframes slide { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }

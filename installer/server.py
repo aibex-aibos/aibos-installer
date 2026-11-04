@@ -33,6 +33,14 @@ class App:
         if p["error"]:
             body.append(f'<p class="error">{e(p["error"])}</p>')
         body.extend(f"<p>{e(x)}</p>" for x in p["paras"])
+        if p["phases"]:
+            marks = {"done": "☑", "run": "◐", "todo": "☐"}
+            items = []
+            for label, state, secs in p["phases"]:
+                extra = f' <span class="time">{secs // 60}:{secs % 60:02d}</span>' if secs is not None else ""
+                items.append(f'<li class="{state}">{marks[state]} {e(label)}{extra}</li>')
+            body.append('<ul class="phases">' + "".join(items) + "</ul>")
+            body.append('<div class="bar"><span></span></div>')
         if p["pre"]:
             body.append(f'<pre>{e(p["pre"])}</pre>')
         if p["choices"] or p["form"]:
@@ -63,14 +71,16 @@ class App:
 
     def workspace_form(self) -> str:
         run, t, e = self.run, self.run.t, html.escape
-        rows = [f'<fieldset><legend><label><input type="radio" name="mode" value="new" checked> {e(t("p3_new"))}</label></legend>',
-                f'<label>{e(t("p3_name"))} <input name="name" autocomplete="off"></label>',
-                f'<label>{e(t("p3_parent"))} <input name="parent" value="~"></label></fieldset>',
-                f'<fieldset><legend><label><input type="radio" name="mode" value="existing"> {e(t("p3_existing"))}</label></legend>']
+        f = run.form
+        existing = f.get("mode") == "existing"
+        rows = [f'<fieldset><legend><label><input type="radio" name="mode" value="new"{"" if existing else " checked"}> {e(t("p3_new"))}</label></legend>',
+                f'<label>{e(t("p3_name"))} <input name="name" autocomplete="off" value="{e(f.get("name", ""))}"></label>',
+                f'<label>{e(t("p3_parent"))} <input name="parent" value="{e(f.get("parent") or "~")}"></label></fieldset>',
+                f'<fieldset><legend><label><input type="radio" name="mode" value="existing"{" checked" if existing else ""}> {e(t("p3_existing"))}</label></legend>']
         vaults = run.known_vaults()
         options = "".join(f'<option value="{e(path)}">{e(path)} — {e(kind)}</option>' for path, kind in vaults)
         rows.append(f'<label>{e(t("p3_list"))} <select name="known"><option value="">{e(t("p3_none"))}</option>{options}</select></label>')
-        rows.append(f'<label>{e(t("p3_path"))} <input name="path" autocomplete="off"></label></fieldset>')
+        rows.append(f'<label>{e(t("p3_path"))} <input name="path" autocomplete="off" value="{e(f.get("path", ""))}"></label></fieldset>')
         return "\n".join(rows)
 
 

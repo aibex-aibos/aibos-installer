@@ -66,7 +66,7 @@ class Run:
         self.lang = system_language()
         self.texts = {l: json.loads((base / "i18n" / f"{l}.json").read_text(encoding="utf-8")) for l in ("de", "en")}
         self.legal = consent.legal_version(base)
-        self.step = "1"              # 1, 2, 3, 4a, 4a-run, 4b, 5, end
+        self.step = "1"              # 1, 2, 3, 3-run, 4a, 4a-run, 4b, 5, end
         self.error = ""
         self.status = ""
         self.message = ""
@@ -74,6 +74,14 @@ class Run:
         self.vault: Path | None = None
         self.vault_new = False
         self.vault_created = False
+        self.parent_new: Path | None = None     # missing parent folder, created after the final consent (Memo 27)
+        self.parent_created = False
+        self.offer_parent = ""                  # parent the user may agree to create (page 3)
+        self.form: dict = {}                    # last input on page 3, shown again after an error
+        self.phases: list[str] = []             # progress (Memo 27): keys in order
+        self.phase_state: dict = {}             # key -> todo, run, done
+        self.phase_t0: dict = {}
+        self.run_t0 = 0.0
         self.kernel = ""
         self.plan = ""
         self.progress: list[str] = []
@@ -161,9 +169,9 @@ class Run:
                                                           self.version, self.dist)
                 self.note(f"consent {self.consent_file}")
                 self.step = "3"
-            elif step == "3" and choice == "next":
-                if self.choose_workspace(fields):
-                    self.prepare_plans()
+            elif step == "3" and choice in ("next", "create"):
+                if self.choose_workspace(fields, create=(choice == "create")):
+                    self.start_worker(self.prepare_plans, "3-run")
             elif step == "4a" and choice == "install":
                 self.start_worker(self.install_kernel, "4a-run")
             elif step == "4b" and choice == "install":
@@ -173,6 +181,7 @@ class Run:
         self.busy = True
         self.step = step
         self.progress = []
+        self.run_t0 = time.time()
         threading.Thread(target=self._work, args=(target,), daemon=True).start()
 
     def _work(self, target) -> None:
@@ -184,6 +193,29 @@ class Run:
         finally:
             with self.lock:
                 self.busy = False
+
+    # --- progress: phases with state and time (Memo 27) -------------------------------------------------
+
+    def set_phases(self, kernel_needed: bool) -> None:
+        keys = (["clone", "plan_kernel", "install_kernel"] if kernel_needed else []) + ["plan_dist"]
+        keys += (["mkdir"] if self.vault_new else []) + ["install_dist"]
+        self.phases = keys
+        self.phase_state = {k: "todo" for k in keys}
+
+    def phase(self, key: str) -> None:
+        with self.lock:
+            for k, v in self.phase_state.items():
+                if v == "run":
+                    self.phase_state[k] = "done"
+            if key in self.phase_state:
+                self.phase_state[key] = "run"
+                self.phase_t0[key] = time.time()
+
+    def phase_done(self) -> None:
+        with self.lock:
+            for k, v in self.phase_state.items():
+                if v == "run":
+                    self.phase_state[k] = "done"
 
     # --- page 3: workspace (spec 05, Arbeitsbereich) ----------------------------------------------------
 
@@ -209,8 +241,25 @@ class Run:
         except OSError:
             return False
 
-    def choose_workspace(self, fields: dict) -> bool:
+    def creatable_parent(self, parent: Path) -> bool:
+        """A missing parent may be created below ~, outside ~/.aios and vaults, under a readable folder."""
+        if not parent.is_absolute():
+            return False
+        existing = parent
+        while not existing.exists():
+            existing = existing.parent
+        home = os.path.realpath(self.home)
+        real = os.path.realpath(existing)
+        if not (real == home or real.startswith(home + "/")) or not existing.is_dir() or not self.readable(existing):
+            return False
+        return not any(part.startswith("§") for part in parent.parts)
+
+    def choose_workspace(self, fields: dict, create: bool = False) -> bool:
         mode = fields.get("mode", "new")
+        self.form = {k: fields.get(k, "") for k in ("mode", "name", "parent", "path", "known")}
+        self.parent_new = None
+        if mode != "new":
+            self.offer_parent = ""
         if mode == "new":
             name = fields.get("name", "").strip()
             parent = Path(os.path.expanduser(fields.get("parent", "~").strip() or "~"))
@@ -218,12 +267,24 @@ class Run:
                 self.error = self.t("err_name")
                 return False
             if not parent.is_dir():
-                self.error = self.t("err_parent", parent=parent)
-                return False
-            if not self.readable(parent):
+                if self.creatable_parent(parent):
+                    if create and self.offer_parent == str(parent):
+                        self.parent_new = Path(os.path.normpath(parent))
+                    else:
+                        self.offer_parent = str(parent)
+                        self.error = self.t("err_parent_create", parent=parent)
+                        return False
+                else:
+                    outer = next((q for q in [parent, *parent.parents] if q.name.startswith("§")), None)
+                    self.error = (self.t("err_in_vault", path=parent / f"§{name}", vault=outer) if outer
+                                  else self.t("err_parent", parent=parent))
+                    return False
+            elif not self.readable(parent):
                 self.error = self.t("err_unreadable", path=parent)
                 return False
-            target = Path(os.path.realpath(parent)) / f"§{name}"
+            self.offer_parent = ""
+            base = self.parent_new if self.parent_new else Path(os.path.realpath(parent))
+            target = base / f"§{name}"
             if self.inside_aios(target):
                 self.error = self.t("err_in_aios", path=target)
                 return False
@@ -298,10 +359,12 @@ class Run:
             self.finish("failed", f"cannot read the manifest of {self.dist} {self.dv}: {e}")
             return
         self.note(f"kernel {self.kernel}, installed={self.kernel_installed()}")
+        self.set_phases(not self.kernel_installed())
         if self.kernel_installed():
             self.plan_distribution()
             return
         clone = self.workdir / "aibex-aios"
+        self.phase("clone")
         if not clone.is_dir():
             rc, out = self.run_cmd(["git", "clone", "-q", self.kernel_repo(), clone])
             if rc != 0:
@@ -310,26 +373,31 @@ class Run:
                 return
         if not self.checkout_checked(clone):
             return
+        self.phase("plan_kernel")
         rc, out = self.run_cmd([clone / "bin" / "aios", "--install", f"v{self.kernel}", "--plan"], cwd=self.home)
         if rc != 0:
             self.finish("failed", f"the plan of the kernel failed: {last_line(out)}")
             return
         self.plan = out
+        self.phase_done()
         self.step = "4a"
 
     def plan_distribution(self) -> None:
         if not os.access(self.forwarder, os.X_OK):
             self.finish("failed", f"kernel {self.kernel} is installed, but {self.forwarder} is missing")
             return
+        self.phase("plan_dist")
         rc, out = self.run_cmd([self.forwarder, "--install", f"{self.dist}=={self.dv}", self.vault, "--plan"],
                                cwd=self.home)
         if rc != 0:
             self.finish("failed", f"the plan of the distribution failed: {last_line(out)}")
             return
         self.plan = out
+        self.phase_done()
         self.step = "4b"
 
     def install_kernel(self) -> None:
+        self.phase("install_kernel")
         target = self.aios / "installer" / "aibex-aios"
         if target.is_dir():
             rc, out = self.run_cmd(["git", "-C", target, "fetch", "-q", "--tags"], stream=True)
@@ -352,9 +420,15 @@ class Run:
 
     def install_distribution(self) -> None:
         if self.vault_new and not self.vault.exists():
+            self.phase("mkdir")
+            if self.parent_new and not self.parent_new.exists():
+                os.makedirs(self.parent_new)
+                self.parent_created = True
+                self.note(f"created {self.parent_new}")
             os.mkdir(self.vault)
             self.vault_created = True
             self.note(f"created {self.vault}")
+        self.phase("install_dist")
         rc, out = self.run_cmd([self.forwarder, "--install", f"{self.dist}=={self.dv}", self.vault, "--yes"],
                                cwd=self.home, stream=True)
         with self.lock:
@@ -366,8 +440,13 @@ class Run:
     # --- end and result (spec 05, Ergebnis) -------------------------------------------------------------
 
     def finish(self, status: str, message: str) -> None:
+        with self.lock:
+            self._finish(status, message)
+
+    def _finish(self, status: str, message: str) -> None:
         if self.step == "end":
             return
+        self.phase_done()
         self.ended_step = self.step
         self.status, self.message = status, message
         self.step = "end"
@@ -389,6 +468,7 @@ class Run:
             "kernel_installed": bool(self.kernel) and self.kernel_installed(),
             "vault": str(self.vault) if self.vault else "",
             "vault_created": self.vault_created,
+            "parent_created": self.parent_created,
             "consent": str(consent.consent_path(self.home, self.legal)) if consent.has_consent(self.home, self.legal) else "",
             "installer": self.version,
             "started_at": self.started_at,
@@ -408,7 +488,7 @@ class Run:
     def page(self) -> dict:
         s = self.step
         p = {"step": s, "head": "", "paras": [], "pre": "", "error": self.error, "choices": [], "form": None,
-             "banner": "", "refresh": False}
+             "banner": "", "refresh": False, "phases": [], "offer_parent": self.offer_parent if s == "3" else ""}
         if s == "1":
             p.update(head=self.t("p1_head"), paras=[self.t(f"p1_{i}") for i in range(1, 7)],
                      choices=[("next", self.t("next"))])
@@ -417,25 +497,39 @@ class Run:
                      banner=self.t("p2_draft") if consent.is_draft(self.legal) else "",
                      form="agree", choices=[("agree", self.t("p2_agree"))])
         elif s == "3":
+            choices = [("create", self.t("p3_create"))] if self.offer_parent else []
             p.update(head=self.t("p3_head"), paras=[self.t("p3_intro")], form="workspace",
-                     choices=[("next", self.t("next"))])
+                     choices=choices + [("next", self.t("next"))])
         elif s == "4a":
             p.update(head=self.t("p4a_head"), paras=[self.t("p4a_intro")], pre=self.plan,
                      choices=[("install", self.t("p4a_button"))])
         elif s == "4b":
             paras = [self.t("p4b_intro")]
+            if self.parent_new:
+                paras.append(self.t("p4b_create", path=self.parent_new))
             if self.vault_new:
                 paras.append(self.t("p4b_create", path=self.vault))
             p.update(head=self.t("p4b_head"), paras=paras, pre=self.plan, choices=[("install", self.t("p4b_button"))])
-        elif s in ("4a-run", "5"):
-            p.update(head=self.t("run_kernel" if s == "4a-run" else "run_dist"),
-                     pre="\n".join(self.progress[-40:]), refresh=True)
+        elif s in ("3-run", "4a-run", "5"):
+            now = time.time()
+            phases = []
+            for k in self.phases:
+                st = self.phase_state.get(k, "todo")
+                secs = int(now - self.phase_t0[k]) if st == "run" and k in self.phase_t0 else None
+                phases.append((self.t(f"ph_{k}"), st, secs))
+            p.update(head=self.t({"3-run": "run_prepare", "4a-run": "run_kernel", "5": "run_dist"}[s]),
+                     paras=[self.t("run_total", t=fmt_secs(int(now - self.run_t0)))],
+                     phases=phases, pre="\n".join(self.progress[-20:]), refresh=True)
         else:
             key = {"done": "end_done", "aborted": "end_aborted", "failed": "end_failed",
                    "timeout": "end_timeout"}.get(self.status, "end_failed")
             p.update(head=self.t("end_head"), paras=[self.t(key, vault=self.vault, message=self.message),
                                                      self.t("end_text")])
         return p
+
+
+def fmt_secs(n: int) -> str:
+    return f"{n // 60}:{n % 60:02d}"
 
 
 def last_line(out: str) -> str:

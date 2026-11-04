@@ -39,6 +39,39 @@
    assert_contains "$R" "liegt in ~/.aios." "inside ~/.aios"
 
 #===============================================================================
+# missing parent: offered below ~ (Memo 27), refused elsewhere; input kept after an error
+#===============================================================================
+
+   R="$(try mode=new name=Probe parent=/nirgends/vault)"
+   assert_contains "$R" "Den Ordner /nirgends/vault gibt es nicht. Gib einen vorhandenen Ordner an." "missing parent outside ~: refused"
+   assert_not_contains "$R" "Ordner anlegen und weiter" "missing parent outside ~: no offer"
+   R="$(try mode=new name=Probe parent="~/vault/neu")"
+   assert_contains "$R" "Den Ordner $HOME/vault/neu gibt es nicht. Soll er angelegt werden?" "missing parent below ~: offered"
+   assert_contains "$R" 'value="create"' "missing parent below ~: button"
+   assert_contains "$R" 'name="name" autocomplete="off" value="Probe"' "input kept: name"
+   assert_contains "$R" 'name="parent" value="~/vault/neu"' "input kept: parent"
+   assert_nofile "$HOME/vault"
+   R="$(try mode=new name=Probe parent="$W/§Vault/neu")"
+   assert_contains "$R" "liegt im Arbeitsbereich $W/§Vault." "missing parent inside a vault: refused"
+
+#===============================================================================
+# progress page: phases with state and time (Memo 27)
+#===============================================================================
+
+   OUT="$(cd "$REPO/installer" && "$PY" -I -c 'import sys, time; sys.path.insert(0, "."); import steps; from pathlib import Path
+r = steps.Run(Path(".."), Path(sys.argv[1]), "distribution-demo==1.0.0", "0"*40, "0.1.0", True, "test")
+r.lang = "de"; r.vault_new = True; r.set_phases(True); r.run_t0 = time.time() - 75
+r.phase("clone"); r.phase("plan_kernel"); r.step = "3-run"
+p = r.page()
+print(p["head"]); print(p["paras"][0]); print([(l, s) for l, s, t in p["phases"]]); print(p["refresh"])
+r.close()' "$HOME" 2>&1)"
+   assert_contains "$OUT" "Der Plan wird erstellt" "progress: head"
+   assert_contains "$OUT" "Läuft seit 1:15." "progress: total time"
+   assert_contains "$OUT" "('Kernel holen', 'done'), ('Plan des Kernels erstellen', 'run'), ('Kernel installieren', 'todo')" "progress: phases"
+   assert_contains "$OUT" "('Ordner anlegen', 'todo'), ('Distribution installieren (Arbeitspferde, Pakete, Skills)', 'todo')" "progress: new vault phases"
+   assert_contains "$OUT" "True" "progress: page reloads"
+
+#===============================================================================
 # existing workspace
 #===============================================================================
 
@@ -56,6 +89,7 @@
 #===============================================================================
 
    R="$(try mode=new name=Gültig_1 parent="~/work")"
+   wait_until 20 test -f "$HOME/.aios/install/result.json" && ok || fail "manifest without kernel: result written"
    assert_eq "$(result_field status)" "failed" "manifest without kernel: failed"
    assert_contains "$(result_field message)" "names no kernel" "manifest without kernel: message"
    assert_eq "$(result_field vault)" "$W/§Gültig_1" "~ resolved, umlaut allowed (F132)"

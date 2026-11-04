@@ -49,5 +49,16 @@
   "end_failed": "Das hat nicht geklappt: {message}",
   "end_timeout": "Die Zeit ist abgelaufen. Starte die Installation neu, wenn du weitermachen willst.",
   "tui_choice": "Auswahl",
-  "tui_wait": "Bitte warten …"
+  "tui_wait": "Bitte warten …",
+  "err_parent_create": "Den Ordner {parent} gibt es nicht. Soll er angelegt werden? Angelegt wird er erst nach deiner finalen Zustimmung auf Seite 4.",
+  "p3_create": "Ordner anlegen und weiter",
+  "run_prepare": "Der Plan wird erstellt …",
+  "run_total": "Läuft seit {t}.",
+  "ph_clone": "Kernel holen",
+  "ph_plan_kernel": "Plan des Kernels erstellen",
+  "ph_install_kernel": "Kernel installieren",
+  "ph_plan_dist": "Plan der Distribution erstellen",
+  "ph_mkdir": "Ordner anlegen",
+  "ph_install_dist": "Distribution installieren (Arbeitspferde, Pakete, Skills)",
+  "tui_create": "Anlegen? [j/N] "
 }
