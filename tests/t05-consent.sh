@@ -3,7 +3,7 @@
    case "$SANDBOX" in */aios-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
 
    D="distribution-demo==1.0.0"
-   C="$HOME/.aios/consent/nutzungsvertrag-1.0.json"
+   C="$HOME/.aios/consent/nutzungsvertrag-1.1.json"
    field() { "$PY" -I -c 'import json,sys; print(json.load(open(sys.argv[1]))[sys.argv[2]])' "$C" "$1"; }
 
 #===============================================================================
@@ -17,7 +17,7 @@
    assert_file "$C"
    assert_eq "$(stat -f %Lp "$C")" "600" "consent: file mode 600"
    assert_eq "$(stat -f %Lp "$HOME/.aios/consent")" "700" "consent: folder mode 700"
-   assert_eq "$(field version)" "1.0" "consent: version"
+   assert_eq "$(field version)" "1.1" "consent: version"
    assert_eq "$(field draft)" "False" "consent: not a draft"
    assert_eq "$(field language)" "de" "consent: language"
    assert_eq "$(field way)" "test" "consent: way test in test mode"
