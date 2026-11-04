@@ -12,7 +12,7 @@ Implementierungsplan: Konzept-Repo `AA-AIbex-AIOS`, `@Memo/Installer/18`, freige
 | 5 | Kernel und Ergebnis (`t03`, `t05`, `t06`) | ☑ | Schritte 4, 5 (`t06` in Schritt 6) |
 | 6 | Ausweg Terminal | ☑ | Schritt 6 |
 | 7 | Testschalter und Release (`t07`, `t08`) | ☑ | Schritt 7 |
-| 8 | Probe mit iHux | ☐ | |
+| 8 | Probe mit iHux | ☑ | Probe-Commits `b50d64e`–Memo 28 (Konzept-Repo `@Memo/Installer/21–28`) |
 | 9 | Capricorn 0.4.1 | ☐ | |
 | 10 | Kandidaten nach außen | ☐ | |
 

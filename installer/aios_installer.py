@@ -142,6 +142,14 @@ def to_terminal(run, o: dict) -> None:
         return
     subprocess.run(["open", "-a", "Terminal", str(script)], stdin=subprocess.DEVNULL,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # open -a does not bring Terminal in front of the app that started us (probe, Memo 28): activate it
+    try:                                   # may need the macOS permission "control Terminal"; best effort
+        subprocess.run(["osascript", "-e", 'tell application "Terminal"', "-e", "delay 1",
+                        "-e", 'set index of (first window whose name contains "AIBOS-Installer") to 1',
+                        "-e", "activate", "-e", "end tell"], stdin=subprocess.DEVNULL,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        pass
 
 
 class Terminated(Exception):
