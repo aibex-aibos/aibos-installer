@@ -86,7 +86,7 @@
    OUT="$(SH "$D" "$C" 2>&1)"; RC=$?
    assert_eq "$RC" "0" "start: exit 0"
    assert_contains "$OUT" 'in the browser window
-"AIOS-Installer"' "start: message names the window"
+"AIBOS-Installer"' "start: message names the window"
    assert_contains "$OUT" "read ~/.aios/install/result.json" "start: message names the result"
    assert_file "$HOME/.aios/install/test-url"
    TOKEN="$(sed 's/.*t=//' "$HOME/.aios/install/test-url")"

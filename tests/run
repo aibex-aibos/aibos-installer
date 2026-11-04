@@ -1,5 +1,5 @@
 #!/bin/bash
-# run: run all tests of the AIOS installer (tests/t*.sh), each in its own sandbox
+# run: run all tests of the AIBOS installer (tests/t*.sh), each in its own sandbox
 
    if [ "$*" == "-?" ] || [ "$*" == "--help" ]; then
       echo '   usage: tests/run            # run all tests'

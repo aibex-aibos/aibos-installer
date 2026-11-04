@@ -32,9 +32,9 @@ def test_mode(home: Path) -> bool:
     roots = {os.path.realpath(tempfile.gettempdir()), "/private/tmp", "/private/var/folders"}
     real = os.path.realpath(home)
     if not any(real == r or real.startswith(r.rstrip("/") + "/") for r in roots):
-        raise SystemExit("AIOS installer: test mode needs a HOME below the temporary folder. Nothing has been installed.")
+        raise SystemExit("AIBOS installer: test mode needs a HOME below the temporary folder. Nothing has been installed.")
     if not os.environ.get("AIOS_HUBS"):
-        raise SystemExit("AIOS installer: test mode needs AIOS_HUBS. Nothing has been installed.")
+        raise SystemExit("AIBOS installer: test mode needs AIOS_HUBS. Nothing has been installed.")
     return True
 
 
@@ -58,7 +58,7 @@ class Run:
                  test: bool, way: str):
         m = DIST_RE.match(dist_spec)
         if not m or not COMMIT_RE.match(commit):
-            raise SystemExit(f"AIOS installer: bad arguments: {dist_spec} {commit}")
+            raise SystemExit(f"AIBOS installer: bad arguments: {dist_spec} {commit}")
         self.base, self.home = base, home
         self.aios = home / ".aios"
         self.dist, self.dv, self.commit = m.group(1), m.group(2), commit

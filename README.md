@@ -1,6 +1,6 @@
 # aios-installer
 
-Installer für Distributionen von AIbex AIOS, Version 0.1.0. Er installiert eine Distribution auf einem Mac, auf dem Claude Code läuft: Die KI führt **eine** Zeile aus dem README der Distribution aus, den Dialog mit Hinweis, Nutzungsvertrag, Wahl des Arbeitsbereichs und finaler Zustimmung führt der Installer im Browser, außerhalb der KI. Installiert wird mit dem Kernel von AIOS (`aios --install`).
+Installer für Distributionen von AIbex AIBOS, Version 0.1.0. Er installiert eine Distribution auf einem Mac, auf dem Claude Code läuft: Die KI führt **eine** Zeile aus dem README der Distribution aus, den Dialog mit Hinweis, Nutzungsvertrag, Wahl des Arbeitsbereichs und finaler Zustimmung führt der Installer im Browser, außerhalb der KI. Installiert wird mit dem Kernel von AIBOS (`aios --install`).
 
 ## Benutzen
 
@@ -10,7 +10,7 @@ Im README einer Distribution steht eine Zeile wie diese (Version, Prüfsummen un
 f=$(mktemp) && curl -fsSL https://raw.githubusercontent.com/aibex-aios/aios-installer/v<v>/install.sh -o "$f" && echo "<sha256>  $f" | shasum -a 256 -c - && sh "$f" "distribution-<name>==<version>" <commit des kernels>
 ```
 
-Sag deiner KI etwa „Installiere Capricorn von github.com/aibex-aios/distribution-capricorn", oder führe die Zeile im Terminal aus. Der Installer öffnet ein Fenster „AIOS-Installer"; wenn er fertig ist, schreib deiner KI „fertig".
+Sag deiner KI etwa „Installiere Capricorn von github.com/aibex-aios/distribution-capricorn", oder führe die Zeile im Terminal aus. Der Installer öffnet ein Fenster „AIBOS-Installer"; wenn er fertig ist, schreib deiner KI „fertig".
 
 Voraussetzungen: macOS, Python ≥ 3.11, `git` (Command Line Tools). Fehlt etwas, meldet die Formel es und installiert nichts.
 

@@ -78,7 +78,7 @@ def make_handler(app: App):
     import time
 
     class Handler(http.server.BaseHTTPRequestHandler):
-        server_version = "AIOS-Installer"
+        server_version = "AIBOS-Installer"
         sys_version = ""
 
         def log_message(self, *args):          # nothing on stdout or stderr (IN3)

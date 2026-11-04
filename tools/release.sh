@@ -1,5 +1,5 @@
 #!/bin/bash
-# release.sh: build the release asset of the AIOS installer, set its checksum in install.sh, print the install line
+# release.sh: build the release asset of the AIBOS installer, set its checksum in install.sh, print the install line
 
    if [ "$*" == "-?" ] || [ "$*" == "--help" ] || [ "$*" == "" ]; then
       echo '   usage: tools/release.sh <version> [distribution-<name>==<dv> <commit>]'

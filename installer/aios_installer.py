@@ -1,4 +1,4 @@
-"""aios_installer.py: entry of the AIOS installer (spec 01–06 in @Spec/Installer of AA-AIbex-AIOS).
+"""aios_installer.py: entry of the AIBOS installer (spec 01–06 in @Spec/Installer of AA-AIbex-AIOS).
 
 usage: aios_installer.py start "distribution-<name>==<version>" <commit> [--cleanup <dir>]
        aios_installer.py serve "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>] [--ready-fd <fd>]
@@ -73,7 +73,7 @@ def cmd_start(o: dict) -> int:
         print(e)
         return 2
     if not steps.DIST_RE.match(o["dist"]) or not steps.COMMIT_RE.match(o["commit"]):
-        print(f"AIOS installer: bad arguments: {o['dist']} {o['commit']}")
+        print(f"AIBOS installer: bad arguments: {o['dist']} {o['commit']}")
         return 2
     r, w = os.pipe()
     args = [sys.executable, "-I", os.path.abspath(__file__), "serve", o["dist"], o["commit"],
@@ -88,7 +88,7 @@ def cmd_start(o: dict) -> int:
     os.close(r)
     if line == "READY":
         return 0
-    print(f"AIOS installer: {line or 'no answer from the dialog'}")
+    print(f"AIBOS installer: {line or 'no answer from the dialog'}")
     return 6
 
 
@@ -127,8 +127,8 @@ def to_terminal(run, o: dict) -> None:
     """Switch to the dialog in a Terminal window (spec 03, Ausweg Terminal)."""
     if not o["cleanup"]:                   # started without the formula: own folder, removed by tui
         o["cleanup"] = tempfile.mkdtemp(prefix="aios-installer.")
-    script = Path(o["cleanup"]) / "AIOS-Installer.command"
-    lines = ["#!/bin/sh", 'printf "\\033]0;AIOS-Installer\\007"']
+    script = Path(o["cleanup"]) / "AIBOS-Installer.command"
+    lines = ["#!/bin/sh", 'printf "\\033]0;AIBOS-Installer\\007"']
     cmd = [sys.executable, "-I", os.path.abspath(__file__), "tui", o["dist"], o["commit"], "--home", o["home"]]
     if o["cleanup"]:
         cmd += ["--cleanup", o["cleanup"]]
@@ -196,7 +196,7 @@ def cmd_tui(o: dict) -> int:
     home = Path(o["home"])
     test = steps.test_mode(home)
     run = steps.Run(BASE, home, o["dist"], o["commit"], VERSION, test, "terminal")
-    print("\033]0;AIOS-Installer\007", end="")
+    print("\033]0;AIBOS-Installer\007", end="")
     try:
         while True:
             p = run.page()

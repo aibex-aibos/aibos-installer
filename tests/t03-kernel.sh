@@ -66,7 +66,7 @@
    to_page3
    client post step=3 choice=next mode=new name=Probe parent="$W" >/dev/null
    R="$(page)"
-   assert_contains "$R" "AIOS-Kernel 0.6.0 installieren" "4a: head"
+   assert_contains "$R" "AIBOS-Kernel 0.6.0 installieren" "4a: head"
    assert_contains "$R" "AIbex AIOS v0.6.0" "4a: plan of the kernel verbatim"
    assert_contains "$R" "(plan only, nothing written)" "4a: --plan"
    assert_nofile "$HOME/.aios/versions/v0.6.0"
