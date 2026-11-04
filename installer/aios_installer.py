@@ -1,6 +1,6 @@
 """aios_installer.py: entry of the AIBOS installer (spec 01–06 in @Spec/Installer of AA-AIbex-AIOS).
 
-usage: aios_installer.py start "distribution-<name>==<version>" <commit> [--cleanup <dir>]
+usage: aios_installer.py start "distribution-<name>==<version>" <commit> [--cleanup <dir>] [--python <python3>]
        aios_installer.py serve "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>] [--ready-fd <fd>]
        aios_installer.py tui   "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>]
 
@@ -30,12 +30,12 @@ FALLBACK = 20                                      # seconds until the switch to
 
 
 def parse(argv: list) -> dict:
-    opts = {"cleanup": "", "home": str(Path.home()), "ready_fd": -1}
+    opts = {"cleanup": "", "home": str(Path.home()), "ready_fd": -1, "python": ""}
     pos = []
     i = 0
     while i < len(argv):
         a = argv[i]
-        if a in ("--cleanup", "--home", "--ready-fd") and i + 1 < len(argv):
+        if a in ("--cleanup", "--home", "--ready-fd", "--python") and i + 1 < len(argv):
             opts[a[2:].replace("-", "_")] = argv[i + 1]
             i += 2
             continue
@@ -81,6 +81,8 @@ def cmd_start(o: dict) -> int:
             "--home", str(home), "--ready-fd", str(w)]
     if o["cleanup"]:
         args += ["--cleanup", o["cleanup"]]
+    if o["python"]:
+        args += ["--python", o["python"]]
     subprocess.Popen(args, pass_fds=(w,), start_new_session=True, stdin=subprocess.DEVNULL,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=str(home))
     os.close(w)
@@ -133,6 +135,8 @@ def to_terminal(run, o: dict) -> None:
     cmd = [sys.executable, "-I", os.path.abspath(__file__), "tui", o["dist"], o["commit"], "--home", o["home"]]
     if o["cleanup"]:
         cmd += ["--cleanup", o["cleanup"]]
+    if o["python"]:
+        cmd += ["--python", o["python"]]
     lines.append("exec " + " ".join("'" + c.replace("'", "'\\''") + "'" for c in cmd))
     script.write_text("\n".join(lines) + "\n")
     os.chmod(script, 0o700)
@@ -170,7 +174,7 @@ def cmd_serve(o: dict) -> int:
     fd = o["ready_fd"]
     try:
         test = steps.test_mode(home)
-        run = steps.Run(BASE, home, o["dist"], o["commit"], VERSION, test, "test" if test else "browser")
+        run = steps.Run(BASE, home, o["dist"], o["commit"], VERSION, test, "test" if test else "browser", o["python"])
         app = server.App(run, secrets.token_urlsafe(32), BASE / "installer" / "templates")
         srv = server.http.server.HTTPServer(("127.0.0.1", 0), server.make_handler(app))
     except (SystemExit, OSError) as e:
@@ -221,7 +225,7 @@ def cmd_serve(o: dict) -> int:
 def cmd_tui(o: dict) -> int:
     home = Path(o["home"])
     test = steps.test_mode(home)
-    run = steps.Run(BASE, home, o["dist"], o["commit"], VERSION, test, "terminal")
+    run = steps.Run(BASE, home, o["dist"], o["commit"], VERSION, test, "terminal", o["python"])
     print("\033]0;AIBOS-Installer\007", end="")
     catch_signals()
     try:

@@ -93,7 +93,7 @@ tar -xzf "$ASSET" -C "$TMPROOT" 2>/dev/null && [ -f "$TMPROOT/installer/aios_ins
 # step 6: start the installer detached; it reports over a pipe whether it runs
 #===============================================================================
 
-"$PY" -I "$TMPROOT/installer/aios_installer.py" start "$1" "$2" --cleanup "$TMPROOT" \
+"$PY" -I "$TMPROOT/installer/aios_installer.py" start "$1" "$2" --cleanup "$TMPROOT" --python "$PY" \
    || fail 6 "AIBOS installer: the installer did not start. Nothing has been installed."
 
 #===============================================================================

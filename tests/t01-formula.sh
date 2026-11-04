@@ -93,6 +93,8 @@
    assert_not_contains "$OUT" "$TOKEN" "start: token not on stdout (IN3)"
    assert_not_contains "$OUT" "127.0.0.1" "start: address not on stdout"
    R="$(client get)"; assert_eq "$(printf '%s' "$R" | head -1)" "200" "start: the dialog answers"
+   CMD="$(for P in $(pgrep -f "aios_installer.py serve"); do ps -p "$P" -o command=; done | grep -- "--home $HOME")"
+   assert_contains "$CMD" "--python $PY" "start: the formula passes its python on (B25)"
    client post step=1 choice=abort >/dev/null
    wait_until 10 no_installer && ok || fail "start: installer ended after abort"
    assert_eq "$(tmp_left)" "$BEFORE" "start: temporary folder of the formula removed at the end"

@@ -62,9 +62,10 @@
 
 #===============================================================================
 # page 4a: plan of the kernel verbatim, install; page 4b: plan of the distribution; abort (F113)
+# without a python3 >= 3.11 in PATH: the installer passes the python of the formula on (B25)
 #===============================================================================
 
-   start_installer "$D" "$COMMIT" >/dev/null
+   PATH="$SANDBOX/fake:/usr/bin:/bin:/usr/sbin:/sbin" start_installer "$D" "$COMMIT" --python "$PYDIR/python3" >/dev/null
    to_page3
    post3 mode=new name=Probe parent="$W"
    R="$(page)"

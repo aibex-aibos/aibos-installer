@@ -55,7 +55,7 @@ class Run:
     """State of one run: step, decisions, workspace, kernel, result."""
 
     def __init__(self, base: Path, home: Path, dist_spec: str, commit: str, version: str,
-                 test: bool, way: str):
+                 test: bool, way: str, python: str = ""):
         m = DIST_RE.match(dist_spec)
         if not m or not COMMIT_RE.match(commit):
             raise SystemExit(f"AIBOS installer: bad arguments: {dist_spec} {commit}")
@@ -63,6 +63,7 @@ class Run:
         self.aios = home / ".aios"
         self.dist, self.dv, self.commit = m.group(1), m.group(2), commit
         self.version, self.test, self.way = version, test, way
+        self.python = python                     # the python3 the formula found (B25, Memo 32)
         self.lang = system_language()
         self.texts = {l: json.loads((base / "i18n" / f"{l}.json").read_text(encoding="utf-8")) for l in ("de", "en")}
         self.legal = consent.legal_version(base)
@@ -117,6 +118,9 @@ class Run:
         e = dict(os.environ)
         e["HOME"] = str(self.home)
         e["GIT_TERMINAL_PROMPT"] = "0"     # never ask for credentials, also not in the terminal dialog
+        if self.python:                    # the kernel looks for python3 in PATH only (B25)
+            first = os.path.dirname(os.path.abspath(self.python))
+            e["PATH"] = first + os.pathsep + e.get("PATH", "")
         return e
 
     def run_cmd(self, args: list, cwd: Path | None = None, stream: bool = False) -> tuple[int, str]:
