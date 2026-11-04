@@ -55,7 +55,7 @@ for C in $CANDIDATES; do
    [ -x "$P" ] || continue
    V="$("$P" -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null)" || continue
    FOUND="${FOUND:+$FOUND, }$V ($P)"
-   if "$P" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then PY="$P"; break; fi
+   if "$P" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then PY="$P"; PYV="$V"; break; fi
 done
 [ -n "$PY" ] || fail 3 "AIBOS installer: Python 3.11 or newer is required, found: ${FOUND:-none}." \
    "Install it from https://www.python.org/downloads/macos/ or with Homebrew (brew install python)," \
@@ -100,6 +100,7 @@ tar -xzf "$ASSET" -C "$TMPROOT" 2>/dev/null && [ -f "$TMPROOT/installer/aios_ins
 # step 7: message for the AI
 #===============================================================================
 
+echo "AIBOS installer: using Python $PYV at $PY (other versions on this computer do not matter)."
 cat <<'EOF'
 AIBOS installer started. The dialog runs outside of this chat, in the browser window
 "AIBOS-Installer" (or, if no browser opened, in a Terminal window of the same name).

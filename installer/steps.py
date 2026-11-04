@@ -153,6 +153,16 @@ class Run:
         prefix = Path(os.environ.get("AIOS_PREFIX", "/opt/aios"))
         return (self.aios / "versions" / f"v{self.kernel}").is_dir() or (prefix / f"v{self.kernel}").is_dir()
 
+    def kernel_ready(self) -> bool:
+        """Version installed, forwarder executable and its hooks in settings.json (B28: after --uninstall)."""
+        if not self.kernel_installed() or not os.access(self.forwarder, os.X_OK):
+            return False
+        claude = Path(os.environ.get("AIOS_CLAUDE_DIR", str(self.home / ".claude")))
+        try:
+            return str(self.forwarder) in (claude / "settings.json").read_text(encoding="utf-8")
+        except OSError:
+            return False
+
     # --- decisions (spec 03, Server: only for the current step) ----------------------------------------
 
     def decide(self, step: str, choice: str, fields: dict) -> None:
@@ -362,9 +372,9 @@ class Run:
         except Exception as e:  # noqa: BLE001
             self.finish("failed", f"cannot read the manifest of {self.dist} {self.dv}: {e}")
             return
-        self.note(f"kernel {self.kernel}, installed={self.kernel_installed()}")
-        self.set_phases(not self.kernel_installed())
-        if self.kernel_installed():
+        self.note(f"kernel {self.kernel}, installed={self.kernel_installed()}, ready={self.kernel_ready()}")
+        self.set_phases(not self.kernel_ready())
+        if self.kernel_ready():
             self.plan_distribution()
             return
         clone = self.workdir / "aibex-aios"

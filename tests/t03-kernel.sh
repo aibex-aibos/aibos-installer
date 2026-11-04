@@ -131,6 +131,22 @@
    wait_until 10 no_installer && ok || fail "parent: ended"
 
 #===============================================================================
+# after aios --uninstall: version still there, forwarder and hooks gone -> page 4a again (B28)
+#===============================================================================
+
+   "$HOME/.aios/bin/aios" --uninstall --yes >/dev/null 2>&1
+   [ ! -e "$HOME/.aios/bin/aios" ] && [ -d "$HOME/.aios/versions/v0.6.0" ] && ok || fail "uninstall: forwarder gone, version kept"
+   start_installer "$D" "$COMMIT" >/dev/null
+   to_page3
+   post3 mode=new name=Vier parent="$W"
+   R="$(page)"; assert_contains "$R" "AIBOS-Kernel 0.6.0 installieren" "after uninstall: page 4a (B28)"
+   client post step=4a choice=install >/dev/null
+   wait_page "<h2>Distribution installieren</h2>" && ok || fail "after uninstall: 4b ($(result_field message))"
+   assert_file "$HOME/.aios/bin/aios"
+   client post step=4b choice=abort >/dev/null
+   wait_until 10 no_installer && ok || fail "after uninstall: ended"
+
+#===============================================================================
 # known vaults on page 3; failure of the kernel (AIOS_TEST_FAIL): failed, created folder stays
 #===============================================================================
 

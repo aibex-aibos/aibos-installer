@@ -88,6 +88,8 @@
    assert_contains "$OUT" 'in the browser window
 "AIBOS-Installer"' "start: message names the window"
    assert_contains "$OUT" "read ~/.aios/install/result.json" "start: message names the result"
+   assert_contains "$OUT" "using Python " "start: message names the python (H26)"
+   assert_contains "$OUT" " at $PY " "start: message names its path (H26)"
    assert_file "$HOME/.aios/install/test-url"
    TOKEN="$(sed 's/.*t=//' "$HOME/.aios/install/test-url")"
    assert_not_contains "$OUT" "$TOKEN" "start: token not on stdout (IN3)"
