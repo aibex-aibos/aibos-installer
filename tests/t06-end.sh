@@ -58,6 +58,18 @@
    assert_eq "$(result_field status)" "aborted" "tui: end of input aborts"
 
 #===============================================================================
+# ended from outside (SIGTERM): result aborted, work folder removed, process gone (H23)
+#===============================================================================
+
+   start_installer "$D" "$COMMIT0" >/dev/null
+   client get >/dev/null
+   P="$(pgrep -f "aios_installer.py serve.*--home $HOME" | head -1)"
+   [ -n "$P" ] && kill -TERM "$P"
+   wait_until 10 no_installer && ok || fail "SIGTERM: ended"
+   assert_eq "$(result_field status)" "aborted" "SIGTERM: aborted"
+   assert_contains "$(result_field message)" "ended by SIGTERM on page 1" "SIGTERM: message"
+
+#===============================================================================
 # temporary work folders removed
 #===============================================================================
 

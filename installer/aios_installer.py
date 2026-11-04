@@ -9,6 +9,7 @@ start runs the dialog server detached and returns as soon as it runs (spec 02, s
 import os
 import secrets
 import select
+import signal
 import shutil
 import subprocess
 import sys
@@ -143,6 +144,19 @@ def to_terminal(run, o: dict) -> None:
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+class Terminated(Exception):
+    """SIGTERM or SIGHUP: the run ends like "Abbrechen" (H23)."""
+
+
+def on_signal(signum, frame):
+    raise Terminated(signal.Signals(signum).name)
+
+
+def catch_signals() -> None:
+    for s in (signal.SIGTERM, signal.SIGHUP):
+        signal.signal(s, on_signal)
+
+
 def cmd_serve(o: dict) -> int:
     home = Path(o["home"])
     fd = o["ready_fd"]
@@ -167,6 +181,7 @@ def cmd_serve(o: dict) -> int:
     else:
         opened = open_browser(url)
     start = app.last = time.time()
+    catch_signals()
     try:
         while True:
             if not opened or (not app.got_get and time.time() - start > fallback):
@@ -182,6 +197,9 @@ def cmd_serve(o: dict) -> int:
             elif not run.busy and now - app.last > timeout:
                 with run.lock:
                     run.finish("timeout", "no answer within the time limit")
+    except Terminated as e:
+        with run.lock:
+            run.finish("aborted", f"ended by {e} on page {run.step}")
     finally:
         srv.server_close()
         run.close()
@@ -197,6 +215,7 @@ def cmd_tui(o: dict) -> int:
     test = steps.test_mode(home)
     run = steps.Run(BASE, home, o["dist"], o["commit"], VERSION, test, "terminal")
     print("\033]0;AIBOS-Installer\007", end="")
+    catch_signals()
     try:
         while True:
             p = run.page()
@@ -236,7 +255,7 @@ def cmd_tui(o: dict) -> int:
             answer = input(f"{run.t('tui_choice')}: ").strip()
             if answer.isdigit() and 1 <= int(answer) <= len(choices):
                 run.decide(run.step, choices[int(answer) - 1][0], fields)
-    except (EOFError, KeyboardInterrupt):
+    except (EOFError, KeyboardInterrupt, Terminated):
         with run.lock:
             run.finish("aborted", f"terminal closed on page {run.step}")
         return 0
