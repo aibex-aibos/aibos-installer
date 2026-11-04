@@ -18,18 +18,18 @@
 # release: asset, checksum, versions, commit, install line
 #===============================================================================
 
-   OUT="$("$C/tools/release.sh" 0.1.0-rc1 "distribution-capricorn==0.4.1-rc1" "$K" 2>&1)"; RC=$?
+   OUT="$("$C/tools/release.sh" 0.9.9-rc9 "distribution-capricorn==0.4.1-rc1" "$K" 2>&1)"; RC=$?
    assert_eq "$RC" "0" "release: exit 0"
-   A="$C/dist/aios-installer-0.1.0-rc1.tar.gz"
+   A="$C/dist/aios-installer-0.9.9-rc9.tar.gz"
    assert_file "$A"
    SUM="$(shasum -a 256 "$A" | cut -d' ' -f1)"
    assert_contains "$(cat "$C/install.sh")" "ASSET_SHA256=\"$SUM\"" "install.sh: checksum of the asset"
-   assert_contains "$(cat "$C/install.sh")" 'VERSION="0.1.0-rc1"' "install.sh: version"
-   assert_contains "$(tar -xzOf "$A" installer/aios_installer.py)" 'VERSION = "0.1.0-rc1"' "asset: installer with the version"
+   assert_contains "$(cat "$C/install.sh")" 'VERSION="0.9.9-rc9"' "install.sh: version"
+   assert_contains "$(tar -xzOf "$A" installer/aios_installer.py)" 'VERSION = "0.9.9-rc9"' "asset: installer with the version"
    assert_eq "$(git -C "$C" status --porcelain)" "" "release: committed"
-   assert_contains "$(git -C "$C" log -1 --format=%s)" "Release 0.1.0-rc1" "release: commit message"
+   assert_contains "$(git -C "$C" log -1 --format=%s)" "Release 0.9.9-rc9" "release: commit message"
    ISUM="$(shasum -a 256 "$C/install.sh" | cut -d' ' -f1)"
-   assert_contains "$OUT" "v0.1.0-rc1/install.sh" "install line: tag"
+   assert_contains "$OUT" "v0.9.9-rc9/install.sh" "install line: tag"
    assert_contains "$OUT" "echo \"$ISUM  \$f\"" "install line: checksum of install.sh"
    assert_contains "$OUT" "sh \"\$f\" \"distribution-capricorn==0.4.1-rc1\" $K" "install line: distribution and commit"
    assert_not_contains "$(tar -tzf "$A")" "install.sh" "asset: without install.sh"
@@ -40,7 +40,7 @@
 #===============================================================================
 
    cp "$A" "$SANDBOX/first.tar.gz"; sleep 1
-   "$C/tools/release.sh" 0.1.0-rc1 >/dev/null 2>&1
+   "$C/tools/release.sh" 0.9.9-rc9 >/dev/null 2>&1
    assert_eq "$(shasum -a 256 "$A" | cut -d' ' -f1)" "$SUM" "reproducible asset"
    echo x >> "$C/README.md"
    OUT="$("$C/tools/release.sh" 0.1.0-rc2 2>&1)"; assert_eq "$?" "1" "dirty tree: exit 1"
