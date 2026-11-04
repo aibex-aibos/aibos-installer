@@ -100,6 +100,7 @@ class Run:
     def env(self) -> dict:
         e = dict(os.environ)
         e["HOME"] = str(self.home)
+        e["GIT_TERMINAL_PROMPT"] = "0"     # never ask for credentials, also not in the terminal dialog
         return e
 
     def run_cmd(self, args: list, cwd: Path | None = None, stream: bool = False) -> tuple[int, str]:
@@ -296,7 +297,8 @@ class Run:
         if not clone.is_dir():
             rc, out = self.run_cmd(["git", "clone", "-q", self.kernel_repo(), clone])
             if rc != 0:
-                self.finish("failed", f"cannot clone the kernel: {out.strip().splitlines()[-1] if out.strip() else rc}")
+                self.finish("failed", f"cannot clone the kernel from {self.kernel_repo()} (not reachable or not "
+                                      f"public): {last_line(out)}")
                 return
         if not self.checkout_checked(clone):
             return
