@@ -3,8 +3,8 @@
 # usage: sh install.sh "distribution-<name>==<version>" <commit of the kernel tag>
 # POSIX sh on purpose: it must run and report on a Mac without Python 3.11 or git.
 
-VERSION="0.1.0"
-ASSET_SHA256="0000000000000000000000000000000000000000000000000000000000000000"
+VERSION="0.1.0-rc1"
+ASSET_SHA256="f6c1fa876ab0d3dafe83a0cdcf86891d0d1f64bebae001acb9805c1875fd6246"
 ASSET_URL="https://github.com/aibex-aios/aios-installer/releases/download/v$VERSION/aios-installer-$VERSION.tar.gz"
 
 TMPROOT=""
