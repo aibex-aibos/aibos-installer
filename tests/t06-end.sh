@@ -52,8 +52,8 @@
    OUT="$(cat "$SANDBOX/tui.out")"
    assert_contains "$OUT" "AIOS-Installer" "tui: title"
    assert_contains "$OUT" "1 " "tui: numbered choices"
-   assert_file "$HOME/.aios/consent/nutzungsvertrag-0.1.json"
-   W="$("$PY" -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["way"])' "$HOME/.aios/consent/nutzungsvertrag-0.1.json")"
+   assert_file "$HOME/.aios/consent/nutzungsvertrag-1.0.json"
+   W="$("$PY" -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["way"])' "$HOME/.aios/consent/nutzungsvertrag-1.0.json")"
    assert_eq "$W" "terminal" "tui: consent with way terminal"
    assert_eq "$(result_field status)" "aborted" "tui: end of input aborts"
 

@@ -1,10 +1,10 @@
 # Usage agreement for AIbex AIOS
 
-Version 0.1 — draft, not legally reviewed. Translation; the German version is authoritative.
+Version 1.0. Translation; the German version is authoritative.
 
 ## 1. Parties
 
-This agreement applies between AIbex KG, [address] ("AIbex"), and the person who installs AIbex AIOS with the installer ("you").
+This agreement applies between AIbex KG, Bergstrasse 27, 6342 Niederndorf, Austria, FN 676512 x ("AIbex"), and the person who installs AIbex AIOS with the installer ("you").
 
 ## 2. Subject
 
@@ -20,7 +20,7 @@ You decide which workspaces you create and what your AI does there. The answers 
 
 ## 5. Liability
 
-AIOS is provided without warranty. AIbex is not liable for damage from the use of AIOS or from the behaviour of an AI that uses AIOS, as far as the law permits. [Exceptions under mandatory law, for instance for intent and gross negligence, are added by the legal review.]
+AIOS is provided without warranty. AIbex is not liable for damage from the use of AIOS or from the behaviour of an AI that uses AIOS, as far as the law permits. Excluded from this are damages caused by intent or gross negligence and personal injury.
 
 ## 6. Way back
 
@@ -32,4 +32,4 @@ A new version of this agreement applies only when you accept it during an instal
 
 ## 8. Law and jurisdiction
 
-[Applicable law and jurisdiction are added by the legal review.]
+Austrian law applies, excluding the UN Convention on Contracts for the International Sale of Goods and the conflict-of-law rules. Place of jurisdiction is Innsbruck.

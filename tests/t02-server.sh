@@ -47,11 +47,12 @@
 
    client post step=1 choice=next >/dev/null
    R="$(client get lang=de)"
-   assert_contains "$R" "Nutzungsvertrag, Version 0.1" "page 2: head with version"
-   assert_contains "$R" "Entwurf, nicht juristisch geprüft" "page 2: draft banner"
+   assert_contains "$R" "Nutzungsvertrag, Version 1.0" "page 2: head with version"
+   assert_not_contains "$R" "Entwurf, nicht juristisch geprüft" "page 2: no draft banner for 1.0"
+   assert_contains "$R" "Gerichtsstand ist Innsbruck." "page 2: the agreement 1.0"
    client post step=2 choice=agree >/dev/null
    R="$(client get)"; assert_contains "$R" "Bitte bestätige mit dem Kästchen" "page 2: no consent without the checkbox"
-   assert_nofile "$HOME/.aios/consent/nutzungsvertrag-0.1.json"
+   assert_nofile "$HOME/.aios/consent/nutzungsvertrag-1.0.json"
 
 #===============================================================================
 # abort: result, end page, process gone (IN7, IN8)

@@ -1,10 +1,10 @@
 # Nutzungsvertrag für AIbex AIOS
 
-Version 0.1 — Entwurf, nicht juristisch geprüft
+Version 1.0
 
 ## 1. Vertragsparteien
 
-Dieser Vertrag gilt zwischen der AIbex KG, [Anschrift] („AIbex"), und der Person, die AIbex AIOS mit dem Installer installiert („du").
+Dieser Vertrag gilt zwischen der AIbex KG, Bergstrasse 27, 6342 Niederndorf, Österreich, FN 676512 x („AIbex"), und der Person, die AIbex AIOS mit dem Installer installiert („du").
 
 ## 2. Gegenstand
 
@@ -20,7 +20,7 @@ Du entscheidest, welche Arbeitsbereiche du anlegst und was deine KI dort tut. Di
 
 ## 5. Haftung
 
-AIOS wird ohne Gewähr bereitgestellt. AIbex haftet nicht für Schäden aus der Nutzung von AIOS oder aus dem Verhalten einer KI, die AIOS nutzt, soweit das gesetzlich zulässig ist. [Ausnahmen nach zwingendem Recht, etwa für Vorsatz und grobe Fahrlässigkeit, ergänzt die juristische Prüfung.]
+AIOS wird ohne Gewähr bereitgestellt. AIbex haftet nicht für Schäden aus der Nutzung von AIOS oder aus dem Verhalten einer KI, die AIOS nutzt, soweit das gesetzlich zulässig ist. Davon ausgenommen sind Schäden aus Vorsatz oder grober Fahrlässigkeit sowie Personenschäden.
 
 ## 6. Rückweg
 
@@ -32,4 +32,4 @@ Eine neue Version dieses Vertrags gilt erst, wenn du ihr bei einer Installation 
 
 ## 8. Recht und Gerichtsstand
 
-[Anwendbares Recht und Gerichtsstand ergänzt die juristische Prüfung.]
+Es gilt österreichisches Recht unter Ausschluss des UN-Kaufrechts und der Verweisungsnormen. Gerichtsstand ist Innsbruck.
