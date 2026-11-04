@@ -32,6 +32,8 @@
    assert_not_contains "$R" "<script" "page 1: no JavaScript"
    R="$(client get lang=de)"
    assert_contains "$R" "Außerhalb des Arbeitsbereichs verhält sich deine KI wie ohne AIOS." "page 1 de: outside as without AIOS"
+   assert_contains "$R" "Du installierst AIbex AIBOS mit der Distribution Demo V1.0 (distribution-demo @ v1.0.0)." "page 1 de: name, version line, tag"
+   assert_contains "$R" "Distribution Demo V1.0 (distribution-demo @ v1.0.0)" "subtitle"
    assert_contains "$R" "Der Ordner ~/.aios und deine Arbeitsbereiche bleiben dabei erhalten" "page 1 de: what stays after uninstall (H20)"
    R="$(client get lang=en)"
    assert_contains "$R" "Outside the workspace your AI behaves as without AIOS." "page 1 en"

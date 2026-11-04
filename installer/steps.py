@@ -90,7 +90,15 @@ class Run:
 
     def t(self, key: str, **kw) -> str:
         text = self.texts[self.lang].get(key) or self.texts["en"].get(key, key)
-        return text.format(dist=self.dist, dv=self.dv, version=self.legal, kernel=self.kernel, **kw)
+        return text.format(dist=self.dist, dv=self.dv, version=self.legal, kernel=self.kernel,
+                           dist_line=self.dist_line, **kw)
+
+    @property
+    def dist_line(self) -> str:
+        """Capricorn V0.4 (distribution-capricorn @ v0.4.0) — name, version line and exact tag (Memo 25)."""
+        name = " ".join(w.capitalize() for w in self.dist.removeprefix("distribution-").split("-"))
+        major, minor = self.dv.split(".")[:2]
+        return f"{name} V{major}.{minor} ({self.dist} @ v{self.dv})"
 
     def note(self, line: str) -> None:
         self.log.append(f"{now_iso()} {line}")

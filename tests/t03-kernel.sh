@@ -98,7 +98,7 @@
    client post step=3 choice=next mode=new name=Probe parent="$W" >/dev/null
    R="$(page)"; assert_contains "$R" "Distribution installieren" "further run: 4a skipped"
    client post step=4b choice=install >/dev/null
-   wait_page "ist in $W/§Probe installiert." && ok || fail "end page: done ($(result_field status): $(result_field message))"
+   wait_page "Demo V1.0 (distribution-demo @ v1.0.0) ist in $W/§Probe installiert." && ok || fail "end page: done ($(result_field status): $(result_field message))"
    assert_eq "$(result_field status)" "done" "result: done"
    assert_eq "$(result_field vault)" "$W/§Probe" "result: vault"
    assert_eq "$(result_field vault_created)" "true" "result: vault created"
