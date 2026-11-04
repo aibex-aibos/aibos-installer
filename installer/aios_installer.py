@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # -I leaves the
 import server  # noqa: E402
 import steps   # noqa: E402
 
-VERSION = "0.1.0-rc3"
+VERSION = "0.1.0"
 BASE = Path(__file__).resolve().parent.parent      # installer/, i18n/, legal/
 TIMEOUT = 30 * 60                                  # seconds without a request (spec 03)
 FALLBACK = 20                                      # seconds until the switch to the terminal (spec 03)
