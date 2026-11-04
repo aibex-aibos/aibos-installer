@@ -1,0 +1,19 @@
+:root { --bg: #fbfaf7; --fg: #1d1d1b; --muted: #6b6a66; --accent: #1f5f8b; --warn: #8a5a00; --err: #a12622; --line: #dedbd3; }
+@media (prefers-color-scheme: dark) { :root { --bg: #1b1b1a; --fg: #ecebe6; --muted: #a3a19a; --accent: #7fb6dd; --warn: #e0b45a; --err: #f08a83; --line: #3a3936; } }
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; margin: 0; }
+header, main { max-width: 46rem; margin: 0 auto; padding: 0 1rem; }
+header { border-bottom: 1px solid var(--line); padding-top: 1.5rem; position: relative; }
+h1 { font-size: 1.4rem; margin: 0; }
+.sub { color: var(--muted); margin: .2rem 0 1rem; }
+.switch { position: absolute; right: 1rem; top: 1.6rem; margin: 0; }
+a { color: var(--accent); }
+h2 { font-size: 1.2rem; margin-top: 1.5rem; }
+pre { background: rgba(127,127,127,.08); border: 1px solid var(--line); padding: .8rem; overflow-x: auto; white-space: pre-wrap; font-size: .85rem; max-height: 28rem; overflow-y: auto; }
+.banner { border-left: 4px solid var(--warn); padding: .3rem .8rem; font-weight: 600; color: var(--warn); }
+.error { border-left: 4px solid var(--err); padding: .3rem .8rem; color: var(--err); }
+fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .6rem 1rem 1rem; }
+fieldset label { display: block; margin-top: .5rem; }
+input[type=text], input:not([type]), select { font: inherit; padding: .3rem .4rem; width: 100%; box-sizing: border-box; }
+.buttons { margin: 1.5rem 0 3rem; display: flex; gap: .8rem; flex-wrap: wrap; }
+button { font: inherit; padding: .5rem 1.2rem; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: var(--bg); cursor: pointer; }
+button.secondary { background: transparent; color: var(--fg); border-color: var(--line); }
