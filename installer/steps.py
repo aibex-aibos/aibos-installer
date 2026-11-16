@@ -13,12 +13,12 @@ from pathlib import Path
 
 import consent
 
-KERNEL_REPO = "https://github.com/aibex-aios/aibex-aios"
-MANIFEST_URL = "https://raw.githubusercontent.com/aibex-aios/{dist}/v{dv}/manifest.yaml"
+KERNEL_REPO = "https://github.com/aibex-aibos/aibex-aibos"
+MANIFEST_URL = "https://raw.githubusercontent.com/aibex-aibos/{dist}/v{dv}/manifest.yaml"
 DIST_RE = re.compile(r"^(distribution-[a-z0-9][a-z0-9-]*)==([0-9]+\.[0-9]+\.[0-9]+(?:-rc[0-9]+)?)$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 KERNEL_RE = re.compile(r'^kernel:\s*"?==\s*([0-9]+\.[0-9]+\.[0-9]+(?:-rc[0-9]+)?)"?\s*$', re.M)
-VAULT_LINE_RE = re.compile(r"^\s*(aios \S+|alt \S+|legacy|none)\s+(/.+?)\s+\(([^)]*)\)\s*$")
+VAULT_LINE_RE = re.compile(r"^\s*(aibos \S+|alt \S+|legacy|none)\s+(/.+?)\s+\(([^)]*)\)\s*$")
 
 
 def now_iso() -> str:
@@ -26,15 +26,15 @@ def now_iso() -> str:
 
 
 def test_mode(home: Path) -> bool:
-    """True with AIOS_INSTALLER_TEST=1; raises if the test switch is used outside a sandbox (spec 06)."""
-    if os.environ.get("AIOS_INSTALLER_TEST") != "1":
+    """True with AIBOS_INSTALLER_TEST=1; raises if the test switch is used outside a sandbox (spec 06)."""
+    if os.environ.get("AIBOS_INSTALLER_TEST") != "1":
         return False
     roots = {os.path.realpath(tempfile.gettempdir()), "/private/tmp", "/private/var/folders"}
     real = os.path.realpath(home)
     if not any(real == r or real.startswith(r.rstrip("/") + "/") for r in roots):
         raise SystemExit("AIBOS installer: test mode needs a HOME below the temporary folder. Nothing has been installed.")
-    if not os.environ.get("AIOS_HUBS"):
-        raise SystemExit("AIBOS installer: test mode needs AIOS_HUBS. Nothing has been installed.")
+    if not os.environ.get("AIBOS_HUBS"):
+        raise SystemExit("AIBOS installer: test mode needs AIBOS_HUBS. Nothing has been installed.")
     return True
 
 
@@ -60,7 +60,6 @@ class Run:
         if not m or not COMMIT_RE.match(commit):
             raise SystemExit(f"AIBOS installer: bad arguments: {dist_spec} {commit}")
         self.base, self.home = base, home
-        self.aios = home / ".aios"
         self.dist, self.dv, self.commit = m.group(1), m.group(2), commit
         self.version, self.test, self.way = version, test, way
         self.python = python                     # the python3 the formula found (B25, Memo 32)
@@ -93,7 +92,7 @@ class Run:
         self.stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         self.log: list[str] = [f"{self.started_at} start {self.dist}=={self.dv} commit {self.commit} installer {self.version}"]
         self.lock = threading.RLock()
-        self.workdir = Path(tempfile.mkdtemp(prefix="aios-installer-work."))
+        self.workdir = Path(tempfile.mkdtemp(prefix="aibos-installer-work."))
 
     # --- texts -------------------------------------------------------------------------------------------
 
@@ -112,7 +111,7 @@ class Run:
     def note(self, line: str) -> None:
         self.log.append(f"{now_iso()} {line}")
 
-    # --- environment of aios -----------------------------------------------------------------------------
+    # --- environment of aibos -----------------------------------------------------------------------------
 
     def env(self) -> dict:
         e = dict(os.environ)
@@ -146,18 +145,22 @@ class Run:
         return rc, out
 
     @property
+    def aibos(self) -> Path:
+        return consent.aibos_dir(self.home)
+
+    @property
     def forwarder(self) -> Path:
-        return self.aios / "bin" / "aios"
+        return self.aibos / "bin" / "aibos"
 
     def kernel_installed(self) -> bool:
-        prefix = Path(os.environ.get("AIOS_PREFIX", "/opt/aios"))
-        return (self.aios / "versions" / f"v{self.kernel}").is_dir() or (prefix / f"v{self.kernel}").is_dir()
+        prefix = Path(os.environ.get("AIBOS_PREFIX", "/opt/aibos"))
+        return (self.aibos / "versions" / f"v{self.kernel}").is_dir() or (prefix / f"v{self.kernel}").is_dir()
 
     def kernel_ready(self) -> bool:
         """Version installed, forwarder executable and its hooks in settings.json (B28: after --uninstall)."""
         if not self.kernel_installed() or not os.access(self.forwarder, os.X_OK):
             return False
-        claude = Path(os.environ.get("AIOS_CLAUDE_DIR", str(self.home / ".claude")))
+        claude = Path(os.environ.get("AIBOS_CLAUDE_DIR", str(self.home / ".claude")))
         try:
             return str(self.forwarder) in (claude / "settings.json").read_text(encoding="utf-8")
         except OSError:
@@ -256,7 +259,7 @@ class Run:
             return False
 
     def creatable_parent(self, parent: Path) -> bool:
-        """A missing parent may be created below ~, outside ~/.aios and vaults, under a readable folder."""
+        """A missing parent may be created below ~, outside ~/.aibos and vaults, under a readable folder."""
         if not parent.is_absolute():
             return False
         existing = parent
@@ -299,8 +302,8 @@ class Run:
             self.offer_parent = ""
             base = self.parent_new if self.parent_new else Path(os.path.realpath(parent))
             target = base / f"§{name}"
-            if self.inside_aios(target):
-                self.error = self.t("err_in_aios", path=target)
+            if self.inside_aibos(target):
+                self.error = self.t("err_in_aibos", path=target)
                 return False
             outer = next((p for p in target.parents if p.name.startswith("§")), None)
             if outer:
@@ -323,22 +326,25 @@ class Run:
             if not path.name.startswith("§"):
                 self.error = self.t("err_no_section", path=path)
                 return False
-            if self.inside_aios(path):
-                self.error = self.t("err_in_aios", path=path)
+            if self.inside_aibos(path):
+                self.error = self.t("err_in_aibos", path=path)
                 return False
             self.vault, self.vault_new = path, False
         self.note(f"workspace {self.vault} new={self.vault_new}")
         return True
 
-    def inside_aios(self, path: Path) -> bool:
-        aios = os.path.realpath(self.aios)
-        return str(path) == aios or str(path).startswith(aios + "/")
+    def inside_aibos(self, path: Path) -> bool:
+        for d in (self.home / ".aibos", self.home / ".aios"):     # both until 0.8 (~/.aios: link or folder of 0.6)
+            d = os.path.realpath(d)
+            if str(path) == d or str(path).startswith(d + "/"):
+                return True
+        return False
 
     # --- pages 4a, 4b: kernel and plans (spec 05, Kernel) ---------------------------------------------
 
     def read_kernel_version(self) -> str:
-        if self.test and os.environ.get("AIOS_INSTALLER_MANIFEST"):
-            text = Path(os.environ["AIOS_INSTALLER_MANIFEST"]).read_text(encoding="utf-8")
+        if self.test and os.environ.get("AIBOS_INSTALLER_MANIFEST"):
+            text = Path(os.environ["AIBOS_INSTALLER_MANIFEST"]).read_text(encoding="utf-8")
         else:
             url = MANIFEST_URL.format(dist=self.dist, dv=self.dv)
             with urllib.request.urlopen(url, timeout=30) as r:
@@ -349,8 +355,8 @@ class Run:
         return m.group(1)
 
     def kernel_repo(self) -> str:
-        if self.test and os.environ.get("AIOS_INSTALLER_KERNEL_REPO"):
-            return os.environ["AIOS_INSTALLER_KERNEL_REPO"]
+        if self.test and os.environ.get("AIBOS_INSTALLER_KERNEL_REPO"):
+            return os.environ["AIBOS_INSTALLER_KERNEL_REPO"]
         return KERNEL_REPO
 
     def checkout_checked(self, clone: Path) -> bool:
@@ -377,7 +383,7 @@ class Run:
         if self.kernel_ready():
             self.plan_distribution()
             return
-        clone = self.workdir / "aibex-aios"
+        clone = self.workdir / "aibex-aibos"
         self.phase("clone")
         if not clone.is_dir():
             rc, out = self.run_cmd(["git", "clone", "-q", self.kernel_repo(), clone])
@@ -388,7 +394,7 @@ class Run:
         if not self.checkout_checked(clone):
             return
         self.phase("plan_kernel")
-        rc, out = self.run_cmd([clone / "bin" / "aios", "--install", f"v{self.kernel}", "--plan"], cwd=self.home)
+        rc, out = self.run_cmd([clone / "bin" / "aibos", "--install", f"v{self.kernel}", "--plan"], cwd=self.home)
         if rc != 0:
             self.finish("failed", f"the plan of the kernel failed: {last_line(out)}")
             return
@@ -412,7 +418,7 @@ class Run:
 
     def install_kernel(self) -> None:
         self.phase("install_kernel")
-        target = self.aios / "installer" / "aibex-aios"
+        target = self.aibos / "installer" / "aibex-aibos"
         if target.is_dir():
             rc, out = self.run_cmd(["git", "-C", target, "fetch", "-q", "--tags"], stream=True)
             if rc != 0:
@@ -421,11 +427,11 @@ class Run:
                 return
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(self.workdir / "aibex-aios"), str(target))
+            shutil.move(str(self.workdir / "aibex-aibos"), str(target))
         with self.lock:
             if not self.checkout_checked(target):
                 return
-        rc, out = self.run_cmd([target / "bin" / "aios", "--install", f"v{self.kernel}", "--yes"], stream=True)
+        rc, out = self.run_cmd([target / "bin" / "aibos", "--install", f"v{self.kernel}", "--yes"], stream=True)
         with self.lock:
             if rc != 0:
                 self.finish("failed", f"the kernel was not installed: {last_line(out)}")
@@ -469,7 +475,7 @@ class Run:
         self.write_result()
 
     def write_result(self) -> None:
-        folder = self.aios / "install"
+        folder = self.aibos / "install"
         folder.mkdir(parents=True, exist_ok=True)
         log = folder / f"{self.stamp}.log"
         log.write_text("\n".join(self.log) + "\n", encoding="utf-8")

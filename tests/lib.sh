@@ -8,15 +8,15 @@
 #===============================================================================
 
    sandbox_new() {
-      SANDBOX="$(T="${TMPDIR:-/tmp}"; cd "$(mktemp -d "${T%/}/aios-installer-test.XXXXXX")" && pwd -P)" || exit 1
+      SANDBOX="$(T="${TMPDIR:-/tmp}"; cd "$(mktemp -d "${T%/}/aibos-installer-test.XXXXXX")" && pwd -P)" || exit 1
       export HOME="$SANDBOX/home"
-      export AIOS_PREFIX="$SANDBOX/opt/aios"
-      export AIOS_CLAUDE_DIR="$HOME/.claude"
-      export AIOS_INSTALLER_TEST=1
-      export AIOS_INSTALLER_TERMINAL=log
-      export AIOS_HUBS="aibex-aios=file://$SANDBOX/hubs/aibex-aios"
-      unset AIOS_INSTALLER_ASSET AIOS_INSTALLER_KERNEL_REPO AIOS_INSTALLER_MANIFEST AIOS_INSTALLER_PYTHONS
-      unset AIOS_INSTALLER_TIMEOUT AIOS_INSTALLER_FALLBACK
+      export AIBOS_PREFIX="$SANDBOX/opt/aibos"
+      export AIBOS_CLAUDE_DIR="$HOME/.claude"
+      export AIBOS_INSTALLER_TEST=1
+      export AIBOS_INSTALLER_TERMINAL=log
+      export AIBOS_HUBS="aibex-aibos=file://$SANDBOX/hubs/aibex-aibos"
+      unset AIBOS_INSTALLER_ASSET AIBOS_INSTALLER_KERNEL_REPO AIBOS_INSTALLER_MANIFEST AIBOS_INSTALLER_PYTHONS
+      unset AIBOS_INSTALLER_TIMEOUT AIBOS_INSTALLER_FALLBACK
       mkdir -p "$HOME"
       cd "$SANDBOX" || exit 1             # never inherit the caller's cwd
       PY="$(find_python)"
@@ -25,7 +25,7 @@
    sandbox_drop() {
       stop_installers
       case "$SANDBOX" in
-         */aios-installer-test.*) chmod -R u+rwx "$SANDBOX" 2>/dev/null; rm -rf "$SANDBOX" ;;
+         */aibos-installer-test.*) chmod -R u+rwx "$SANDBOX" 2>/dev/null; rm -rf "$SANDBOX" ;;
       esac
    }
 
@@ -58,12 +58,17 @@
 
    COMMIT0="0000000000000000000000000000000000000000"
 
+   install_file() {                      # install_file <name>: ~/.aibos/install/<name>; with AIOS 0.6 before the kernel
+      if [ -e "$HOME/.aibos/install/$1" ] || [ ! -d "$HOME/.aios/install" ]; then echo "$HOME/.aibos/install/$1"   # ~/.aios (t09)
+      else echo "$HOME/.aios/install/$1"; fi
+   }
+
    start_installer() {                   # start_installer <dist==version> <commit>: start, wait for test-url
-      "$PY" -I "$REPO/installer/aios_installer.py" start "$@"
+      "$PY" -I "$REPO/installer/aibos_installer.py" start "$@"
    }
 
    client() {                            # client get|post [field=value ...]: request to the running installer
-      "$PY" -I "$REPO/tests/client.py" "$HOME/.aios/install/test-url" "$@"
+      "$PY" -I "$REPO/tests/client.py" "$(install_file test-url)" "$@"
    }
 
    wait_until() {                        # wait_until <seconds> <command...>: poll every 0.2 s
@@ -72,17 +77,17 @@
       return 1
    }
 
-   no_installer() { ! pgrep -fl "aios_installer.py" 2>/dev/null | grep -q -- "--home $HOME"; }
+   no_installer() { ! pgrep -fl "aibos_installer.py" 2>/dev/null | grep -q -- "--home $HOME"; }
 
    stop_installers() {
       local P
-      for P in $(pgrep -f "aios_installer.py" 2>/dev/null); do
+      for P in $(pgrep -f "aibos_installer.py" 2>/dev/null); do
          ps -p "$P" -o command= 2>/dev/null | grep -q -- "--home $HOME" && kill "$P" 2>/dev/null
       done
       return 0
    }
 
-   result_field() {                      # result_field <key>: value from ~/.aios/install/result.json
+   result_field() {                      # result_field <key>: value from ~/.aibos/install/result.json
       "$PY" -I -c 'import json,sys; v=json.load(open(sys.argv[1])).get(sys.argv[2]); print("" if v is None else (str(v).lower() if isinstance(v,bool) else v))' \
-         "$HOME/.aios/install/result.json" "$1" 2>/dev/null
+         "$(install_file result.json)" "$1" 2>/dev/null
    }

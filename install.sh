@@ -5,24 +5,24 @@
 
 VERSION="0.1.0"
 ASSET_SHA256="93f1ac4958ce97fedc98d0b0255d8d267e789aa2b9462dca65c36642f9649bc7"
-ASSET_URL="https://github.com/aibex-aios/aios-installer/releases/download/v$VERSION/aios-installer-$VERSION.tar.gz"
+ASSET_URL="https://github.com/aibex-aibos/aibos-installer/releases/download/v$VERSION/aibos-installer-$VERSION.tar.gz"
 
 TMPROOT=""
 cleanup() { [ -n "$TMPROOT" ] && [ -d "$TMPROOT" ] && rm -rf "$TMPROOT"; }
 fail() { code="$1"; shift; for l in "$@"; do printf '%s\n' "$l"; done; cleanup; exit "$code"; }
 
 #===============================================================================
-# test switch (spec 06): only with AIOS_HUBS and a HOME below the temporary folder
+# test switch (spec 06): only with AIBOS_HUBS and a HOME below the temporary folder
 #===============================================================================
 
 TEST=""
-if [ "${AIOS_INSTALLER_TEST:-}" = "1" ]; then
+if [ "${AIBOS_INSTALLER_TEST:-}" = "1" ]; then
    T="${TMPDIR:-/tmp}"; T="${T%/}"
    case "$HOME" in
       "$T"/*|/tmp/*|/private/tmp/*|/var/folders/*|/private/var/folders/*) ;;
       *) fail 2 "AIBOS installer: test mode needs a HOME below the temporary folder. Nothing has been installed." ;;
    esac
-   [ -n "${AIOS_HUBS:-}" ] || fail 2 "AIBOS installer: test mode needs AIOS_HUBS. Nothing has been installed."
+   [ -n "${AIBOS_HUBS:-}" ] || fail 2 "AIBOS installer: test mode needs AIBOS_HUBS. Nothing has been installed."
    TEST=1
 fi
 
@@ -48,7 +48,7 @@ printf '%s' "$2" | grep -Eq '^[0-9a-f]{40}$' \
 #===============================================================================
 
 CANDIDATES="python3 /opt/homebrew/bin/python3 /usr/local/bin/python3 /Library/Frameworks/Python.framework/Versions/Current/bin/python3"
-[ -n "$TEST" ] && [ -n "${AIOS_INSTALLER_PYTHONS+x}" ] && CANDIDATES="$AIOS_INSTALLER_PYTHONS"
+[ -n "$TEST" ] && [ -n "${AIBOS_INSTALLER_PYTHONS+x}" ] && CANDIDATES="$AIBOS_INSTALLER_PYTHONS"
 PY=""; FOUND=""
 for C in $CANDIDATES; do
    P="$(command -v "$C" 2>/dev/null)" || continue
@@ -75,25 +75,25 @@ done
 #===============================================================================
 
 T="${TMPDIR:-/tmp}"
-TMPROOT="$(mktemp -d "${T%/}/aios-installer.XXXXXX")" || fail 5 "AIBOS installer: no temporary folder. Nothing has been installed."
-ASSET="$TMPROOT/aios-installer-$VERSION.tar.gz"
-DOWNLOAD_FAILED="AIBOS installer: the download of aios-installer-$VERSION.tar.gz failed or its checksum does not match."
-if [ -n "$TEST" ] && [ -n "${AIOS_INSTALLER_ASSET:-}" ]; then
-   cp "$AIOS_INSTALLER_ASSET" "$ASSET" 2>/dev/null || fail 5 "$DOWNLOAD_FAILED" "Nothing has been installed."
+TMPROOT="$(mktemp -d "${T%/}/aibos-installer.XXXXXX")" || fail 5 "AIBOS installer: no temporary folder. Nothing has been installed."
+ASSET="$TMPROOT/aibos-installer-$VERSION.tar.gz"
+DOWNLOAD_FAILED="AIBOS installer: the download of aibos-installer-$VERSION.tar.gz failed or its checksum does not match."
+if [ -n "$TEST" ] && [ -n "${AIBOS_INSTALLER_ASSET:-}" ]; then
+   cp "$AIBOS_INSTALLER_ASSET" "$ASSET" 2>/dev/null || fail 5 "$DOWNLOAD_FAILED" "Nothing has been installed."
 else
    curl -fsSL "$ASSET_URL" -o "$ASSET" 2>/dev/null \
       || fail 5 "$DOWNLOAD_FAILED" "Nothing has been installed. Check the network and run the same command again."
 fi
 SUM="$(shasum -a 256 "$ASSET" | cut -d' ' -f1)"
 [ "$SUM" = "$ASSET_SHA256" ] || fail 5 "$DOWNLOAD_FAILED" "Nothing has been installed."
-tar -xzf "$ASSET" -C "$TMPROOT" 2>/dev/null && [ -f "$TMPROOT/installer/aios_installer.py" ] \
+tar -xzf "$ASSET" -C "$TMPROOT" 2>/dev/null && [ -f "$TMPROOT/installer/aibos_installer.py" ] \
    || fail 5 "AIBOS installer: the release asset is incomplete. Nothing has been installed."
 
 #===============================================================================
 # step 6: start the installer detached; it reports over a pipe whether it runs
 #===============================================================================
 
-"$PY" -I "$TMPROOT/installer/aios_installer.py" start "$1" "$2" --cleanup "$TMPROOT" --python "$PY" \
+"$PY" -I "$TMPROOT/installer/aibos_installer.py" start "$1" "$2" --cleanup "$TMPROOT" --python "$PY" \
    || fail 6 "AIBOS installer: the installer did not start. Nothing has been installed."
 
 #===============================================================================
@@ -105,7 +105,8 @@ cat <<'EOF'
 AIBOS installer started. The dialog runs outside of this chat, in the browser window
 "AIBOS-Installer" (or, if no browser opened, in a Terminal window of the same name).
 Tell the user to complete the dialog there, then come back and write "fertig" (or "done").
-When the user does, read ~/.aios/install/result.json and report it to the user.
+When the user does, read ~/.aibos/install/result.json (on a machine with AIOS 0.6 where the installer
+stopped before the kernel: ~/.aios/install/result.json) and report it to the user.
 Do not answer the dialog yourself and do not run any other install command.
 EOF
 exit 0

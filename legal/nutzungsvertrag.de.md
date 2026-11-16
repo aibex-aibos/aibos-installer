@@ -1,6 +1,6 @@
 # Nutzungsvertrag für AIbex AIBOS
 
-Version 1.1
+Version 1.2
 
 ## 1. Vertragsparteien
 
@@ -12,7 +12,7 @@ AIbex AIBOS ist eine Erweiterung für KI-Assistenten wie Claude Code. Es besteht
 
 ## 3. Was AIBOS verändert
 
-Mit der Installation trägt AIBOS Hooks in die Einstellungen deiner KI ein und richtet einen Arbeitsbereich ein. In diesem Arbeitsbereich ändert AIBOS das Verhalten deiner KI grundlegend: Es lädt Wissen und Regeln in jede Sitzung, stellt Befehle bereit und kann Assistenten zuordnen. Außerhalb des Arbeitsbereichs soll sich deine KI wie ohne AIBOS verhalten. AIBOS schreibt nur in den Ordner `~/.aios`, in deine Arbeitsbereiche und in die eigenen Einträge in `~/.claude/settings.json`.
+Mit der Installation trägt AIBOS Hooks in die Einstellungen deiner KI ein und richtet einen Arbeitsbereich ein. In diesem Arbeitsbereich ändert AIBOS das Verhalten deiner KI grundlegend: Es lädt Wissen und Regeln in jede Sitzung, stellt Befehle bereit und kann Assistenten zuordnen. Außerhalb des Arbeitsbereichs soll sich deine KI wie ohne AIBOS verhalten. AIBOS schreibt nur in den Ordner `~/.aibos`, in deine Arbeitsbereiche und in die eigenen Einträge in `~/.claude/settings.json`.
 
 ## 4. Deine Verantwortung
 
@@ -24,7 +24,7 @@ AIBOS wird ohne Gewähr bereitgestellt. AIbex haftet nicht für Schäden aus der
 
 ## 6. Rückweg
 
-Du kannst AIBOS jederzeit mit `~/.aios/bin/aios --uninstall` entfernen und danach den Ordner `~/.aios` löschen. Deine Arbeitsbereiche bleiben erhalten.
+Du kannst AIBOS jederzeit mit `~/.aibos/bin/aibos --uninstall` entfernen und danach den Ordner `~/.aibos` löschen. Deine Arbeitsbereiche bleiben erhalten.
 
 ## 7. Änderungen dieses Vertrags
 

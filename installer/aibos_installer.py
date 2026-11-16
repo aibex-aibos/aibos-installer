@@ -1,8 +1,8 @@
-"""aios_installer.py: entry of the AIBOS installer (spec 01–06 in @Spec/Installer of AA-AIbex-AIOS).
+"""aibos_installer.py: entry of the AIBOS installer (spec 01–06 in @Spec/Installer of AA-AIbex-AIOS).
 
-usage: aios_installer.py start "distribution-<name>==<version>" <commit> [--cleanup <dir>] [--python <python3>]
-       aios_installer.py serve "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>] [--ready-fd <fd>]
-       aios_installer.py tui   "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>]
+usage: aibos_installer.py start "distribution-<name>==<version>" <commit> [--cleanup <dir>] [--python <python3>]
+       aibos_installer.py serve "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>] [--ready-fd <fd>]
+       aibos_installer.py tui   "distribution-<name>==<version>" <commit> --home <home> [--cleanup <dir>]
 
 start runs the dialog server detached and returns as soon as it runs (spec 02, step 6).
 """
@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # -I leaves the
 
 import server  # noqa: E402
 import steps   # noqa: E402
+import consent  # noqa: E402
 
 VERSION = "0.1.0"
 BASE = Path(__file__).resolve().parent.parent      # installer/, i18n/, legal/
@@ -60,7 +61,7 @@ def cleanup_dir(path: str) -> None:
         return
     real = os.path.realpath(path)
     roots = [os.path.realpath(tempfile.gettempdir()), "/private/tmp", "/private/var/folders"]
-    if os.path.basename(real).startswith("aios-installer.") and any(real.startswith(r.rstrip("/") + "/") for r in roots):
+    if os.path.basename(real).startswith("aibos-installer.") and any(real.startswith(r.rstrip("/") + "/") for r in roots):
         shutil.rmtree(real, ignore_errors=True)
 
 
@@ -129,7 +130,7 @@ def private_write(path: Path, text: str) -> None:
 def to_terminal(run, o: dict) -> None:
     """Switch to the dialog in a Terminal window (spec 03, Ausweg Terminal)."""
     if not o["cleanup"]:                   # started without the formula: own folder, removed by tui
-        o["cleanup"] = tempfile.mkdtemp(prefix="aios-installer.")
+        o["cleanup"] = tempfile.mkdtemp(prefix="aibos-installer.")
     script = Path(o["cleanup"]) / "AIBOS-Installer.command"
     lines = ["#!/bin/sh", 'printf "\\033]0;AIBOS-Installer\\007"']
     cmd = [sys.executable, "-I", os.path.abspath(__file__), "tui", o["dist"], o["commit"], "--home", o["home"]]
@@ -141,8 +142,8 @@ def to_terminal(run, o: dict) -> None:
     script.write_text("\n".join(lines) + "\n")
     os.chmod(script, 0o700)
     run.note(f"terminal: open -a Terminal {script}")
-    if run.test and os.environ.get("AIOS_INSTALLER_TERMINAL") == "log":
-        private_write(run.aios / "install" / "test-terminal", f"open -a Terminal {script}\n")
+    if run.test and os.environ.get("AIBOS_INSTALLER_TERMINAL") == "log":
+        private_write(run.aibos / "install" / "test-terminal", f"open -a Terminal {script}\n")
         return
     subprocess.run(["open", "-a", "Terminal", str(script)], stdin=subprocess.DEVNULL,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -183,12 +184,12 @@ def cmd_serve(o: dict) -> int:
     app.port = srv.server_address[1]
     srv.timeout = 0.5
     url = f"http://127.0.0.1:{app.port}/?t={app.token}"
-    timeout = test_seconds("AIOS_INSTALLER_TIMEOUT", TIMEOUT, test)
-    fallback = test_seconds("AIOS_INSTALLER_FALLBACK", FALLBACK, test)
+    timeout = test_seconds("AIBOS_INSTALLER_TIMEOUT", TIMEOUT, test)
+    fallback = test_seconds("AIBOS_INSTALLER_FALLBACK", FALLBACK, test)
     report(fd, "READY")
     handed_over = False
     if test:
-        private_write(home / ".aios" / "install" / "test-url", url + "\n")
+        private_write(consent.aibos_dir(home) / "install" / "test-url", url + "\n")
         opened = True
     else:
         opened = open_browser(url)

@@ -4,8 +4,8 @@
    if [ "$*" == "-?" ] || [ "$*" == "--help" ] || [ "$*" == "" ]; then
       echo '   usage: tools/release.sh <version> [distribution-<name>==<dv> <commit>]'
       echo '          tools/release.sh --version  # print version'
-      echo '   builds dist/aios-installer-<version>.tar.gz (reproducible), sets ASSET_SHA256 and VERSION'
-      echo '   in install.sh and VERSION in installer/aios_installer.py, commits, prints the checksums'
+      echo '   builds dist/aibos-installer-<version>.tar.gz (reproducible), sets ASSET_SHA256 and VERSION'
+      echo '   in install.sh and VERSION in installer/aibos_installer.py, commits, prints the checksums'
       echo '   and, with a distribution and the commit of its kernel, the install line (spec 02, 06)'
       exit 1
    fi
@@ -31,9 +31,9 @@
       [ -z "$COMMIT" ] || [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "*** release: not a full commit: $COMMIT"; exit 1; }
       [ -z "$(git -C "$R" status --porcelain)" ] || { echo "*** release: the working tree is not clean"; exit 1; }
       PY="$(command -v python3)"
-      ASSET="$R/dist/aios-installer-$V.tar.gz"
+      ASSET="$R/dist/aibos-installer-$V.tar.gz"
       # first the version (it is part of the asset), then the asset, then its checksum in install.sh
-      sed -i '' -e "s/^VERSION = \".*\"/VERSION = \"$V\"/" "$R/installer/aios_installer.py"
+      sed -i '' -e "s/^VERSION = \".*\"/VERSION = \"$V\"/" "$R/installer/aibos_installer.py"
       sed -i '' -e "s/^VERSION=\".*\"/VERSION=\"$V\"/" "$R/install.sh"
       mkdir -p "$R/dist"
       "$PY" -I - "$R" "$ASSET" <<'PYEOF' || exit 1
@@ -59,10 +59,10 @@ with open(out, "wb") as f:
 PYEOF
       SUM="$(shasum -a 256 "$ASSET" | cut -d' ' -f1)"
       sed -i '' -e "s/^ASSET_SHA256=\".*\"/ASSET_SHA256=\"$SUM\"/" "$R/install.sh"
-      grep -q "^VERSION=\"$V\"$" "$R/install.sh" && grep -q "^VERSION = \"$V\"$" "$R/installer/aios_installer.py" \
+      grep -q "^VERSION=\"$V\"$" "$R/install.sh" && grep -q "^VERSION = \"$V\"$" "$R/installer/aibos_installer.py" \
          || { echo "*** release: VERSION not set"; exit 1; }
       if [ -n "$(git -C "$R" status --porcelain -- install.sh installer)" ]; then
-         git -C "$R" add install.sh installer/aios_installer.py
+         git -C "$R" add install.sh installer/aibos_installer.py
          git -C "$R" commit -q -m "Release $V: Version und Prüfsumme des Assets in install.sh" || exit 1
       fi
       echo "asset:      $ASSET"
@@ -70,7 +70,7 @@ PYEOF
       echo "install.sh sha256: $(shasum -a 256 "$R/install.sh" | cut -d' ' -f1)"
       if [ -n "$DIST" ]; then
          echo "install line:"
-         echo "f=\$(mktemp) && curl -fsSL https://raw.githubusercontent.com/aibex-aios/aios-installer/v$V/install.sh -o \"\$f\" && echo \"$(shasum -a 256 "$R/install.sh" | cut -d' ' -f1)  \$f\" | shasum -a 256 -c - && sh \"\$f\" \"$DIST\" $COMMIT"
+         echo "f=\$(mktemp) && curl -fsSL https://raw.githubusercontent.com/aibex-aibos/aibos-installer/v$V/install.sh -o \"\$f\" && echo \"$(shasum -a 256 "$R/install.sh" | cut -d' ' -f1)  \$f\" | shasum -a 256 -c - && sh \"\$f\" \"$DIST\" $COMMIT"
       fi
       exit 0
    fi

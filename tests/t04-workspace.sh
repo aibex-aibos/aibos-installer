@@ -1,10 +1,10 @@
 # t04-workspace.sh: page 3, checks of the workspace (spec 05, Arbeitsbereich; spec 03, Meldungen auf Seite 3)
 
-   case "$SANDBOX" in */aios-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
+   case "$SANDBOX" in */aibos-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
 
    D="distribution-demo==1.0.0"
    printf 'name: distribution-demo\nversion: 1.0.0\ntype: distribution\n' > "$SANDBOX/no-kernel.yaml"
-   export AIOS_INSTALLER_MANIFEST="$SANDBOX/no-kernel.yaml"     # valid choices end at the manifest (no kernel:)
+   export AIBOS_INSTALLER_MANIFEST="$SANDBOX/no-kernel.yaml"     # valid choices end at the manifest (no kernel:)
    W="$HOME/work"; mkdir -p "$W/full/§Voll" "$W/§Vault/inner" "$W/plain" "$W/locked"
    touch "$W/full/§Voll/datei"
    chmod 000 "$W/locked"
@@ -34,9 +34,9 @@
    assert_contains "$R" "gibt es schon und er ist nicht leer" "target not empty"
    R="$(try mode=new name=Innen parent="$W/§Vault/inner")"
    assert_contains "$R" "liegt im Arbeitsbereich $W/§Vault." "inside a vault"
-   mkdir -p "$HOME/.aios/x"
-   R="$(try mode=new name=Probe parent="$HOME/.aios/x")"
-   assert_contains "$R" "liegt in ~/.aios." "inside ~/.aios"
+   mkdir -p "$HOME/.aibos/x"
+   R="$(try mode=new name=Probe parent="$HOME/.aibos/x")"
+   assert_contains "$R" "liegt in ~/.aibos." "inside ~/.aibos"
 
 #===============================================================================
 # missing parent: offered below ~ (Memo 27), refused elsewhere; input kept after an error
@@ -89,7 +89,7 @@ r.close()' "$HOME" 2>&1)"
 #===============================================================================
 
    R="$(try mode=new name=Gültig_1 parent="~/work")"
-   wait_until 20 test -f "$HOME/.aios/install/result.json" && ok || fail "manifest without kernel: result written"
+   wait_until 20 test -f "$HOME/.aibos/install/result.json" && ok || fail "manifest without kernel: result written"
    assert_eq "$(result_field status)" "failed" "manifest without kernel: failed"
    assert_contains "$(result_field message)" "names no kernel" "manifest without kernel: message"
    assert_eq "$(result_field vault)" "$W/§Gültig_1" "~ resolved, umlaut allowed (F132)"

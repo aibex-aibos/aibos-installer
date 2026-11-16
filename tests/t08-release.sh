@@ -1,6 +1,6 @@
 # t08-release.sh: tools/release.sh (spec 06, Release) — reproducible asset, checksum and version, install line
 
-   case "$SANDBOX" in */aios-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
+   case "$SANDBOX" in */aibos-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
 
 #===============================================================================
 # setup: a copy of the repo as its own git repo
@@ -20,12 +20,12 @@
 
    OUT="$("$C/tools/release.sh" 0.9.9-rc9 "distribution-capricorn==0.4.1-rc1" "$K" 2>&1)"; RC=$?
    assert_eq "$RC" "0" "release: exit 0"
-   A="$C/dist/aios-installer-0.9.9-rc9.tar.gz"
+   A="$C/dist/aibos-installer-0.9.9-rc9.tar.gz"
    assert_file "$A"
    SUM="$(shasum -a 256 "$A" | cut -d' ' -f1)"
    assert_contains "$(cat "$C/install.sh")" "ASSET_SHA256=\"$SUM\"" "install.sh: checksum of the asset"
    assert_contains "$(cat "$C/install.sh")" 'VERSION="0.9.9-rc9"' "install.sh: version"
-   assert_contains "$(tar -xzOf "$A" installer/aios_installer.py)" 'VERSION = "0.9.9-rc9"' "asset: installer with the version"
+   assert_contains "$(tar -xzOf "$A" installer/aibos_installer.py)" 'VERSION = "0.9.9-rc9"' "asset: installer with the version"
    assert_eq "$(git -C "$C" status --porcelain)" "" "release: committed"
    assert_contains "$(git -C "$C" log -1 --format=%s)" "Release 0.9.9-rc9" "release: commit message"
    ISUM="$(shasum -a 256 "$C/install.sh" | cut -d' ' -f1)"
@@ -52,7 +52,7 @@
 #===============================================================================
 
    git -C "$C" checkout -q README.md
-   AIOS_INSTALLER_ASSET="$A" AIOS_INSTALLER_PYTHONS="$PY" sh "$C/install.sh" "distribution-demo==1.0.0" "$COMMIT0" >/dev/null 2>&1
+   AIBOS_INSTALLER_ASSET="$A" AIBOS_INSTALLER_PYTHONS="$PY" sh "$C/install.sh" "distribution-demo==1.0.0" "$COMMIT0" >/dev/null 2>&1
    assert_eq "$?" "0" "released formula starts with its asset"
    client post step=1 choice=abort >/dev/null
    wait_until 10 no_installer && ok || fail "released installer ended"

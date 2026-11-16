@@ -1,6 +1,6 @@
 # Usage agreement for AIbex AIBOS
 
-Version 1.1. Translation; the German version is authoritative.
+Version 1.2. Translation; the German version is authoritative.
 
 ## 1. Parties
 
@@ -12,7 +12,7 @@ AIbex AIBOS is an extension for AI assistants such as Claude Code. It consists o
 
 ## 3. What AIBOS changes
 
-With the installation AIBOS adds hooks to the settings of your AI and sets up a workspace. In this workspace AIBOS fundamentally changes the behaviour of your AI: it loads knowledge and rules into every session, provides commands and can assign assistants. Outside the workspace your AI is meant to behave as without AIBOS. AIBOS writes only to the folder `~/.aios`, to your workspaces and to its own entries in `~/.claude/settings.json`.
+With the installation AIBOS adds hooks to the settings of your AI and sets up a workspace. In this workspace AIBOS fundamentally changes the behaviour of your AI: it loads knowledge and rules into every session, provides commands and can assign assistants. Outside the workspace your AI is meant to behave as without AIBOS. AIBOS writes only to the folder `~/.aibos`, to your workspaces and to its own entries in `~/.claude/settings.json`.
 
 ## 4. Your responsibility
 
@@ -24,7 +24,7 @@ AIBOS is provided without warranty. AIbex is not liable for damage from the use 
 
 ## 6. Way back
 
-You can remove AIBOS at any time with `~/.aios/bin/aios --uninstall` and then delete the folder `~/.aios`. Your workspaces are kept.
+You can remove AIBOS at any time with `~/.aibos/bin/aibos --uninstall` and then delete the folder `~/.aibos`. Your workspaces are kept.
 
 ## 7. Changes to this agreement
 

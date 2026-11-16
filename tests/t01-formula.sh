@@ -1,6 +1,6 @@
 # t01-formula.sh: install.sh (spec 02, Formel) — arguments, macOS, Python, git, asset, start, message
 
-   case "$SANDBOX" in */aios-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
+   case "$SANDBOX" in */aibos-installer-test.*) ;; *) echo "*** run via tests/run, never directly" >&2; exit 1;; esac
 
 #===============================================================================
 # setup: fake programs, an asset built from the repo and a formula with its checksum
@@ -13,11 +13,11 @@
    (cd "$REPO" && COPYFILE_DISABLE=1 tar -czf "$ASSET" installer i18n legal)
    SUM="$(shasum -a 256 "$ASSET" | cut -d' ' -f1)"
    sed "s/^ASSET_SHA256=.*/ASSET_SHA256=\"$SUM\"/" "$REPO/install.sh" > "$SANDBOX/install.sh"
-   export AIOS_INSTALLER_ASSET="$ASSET"
-   export AIOS_INSTALLER_PYTHONS="$PY"
+   export AIBOS_INSTALLER_ASSET="$ASSET"
+   export AIBOS_INSTALLER_PYTHONS="$PY"
    D="distribution-demo==1.0.0"; C="0123456789abcdef0123456789abcdef01234567"
    nothing_written() { [ -z "$(ls -A "$HOME")" ] && ok || fail "$1: something written to HOME: $(ls -A "$HOME")"; }
-   tmp_left() { ls -d "${TMPDIR:-/tmp}"/aios-installer.* 2>/dev/null | wc -l | tr -d ' '; }
+   tmp_left() { ls -d "${TMPDIR:-/tmp}"/aibos-installer.* 2>/dev/null | wc -l | tr -d ' '; }
    BEFORE="$(tmp_left)"
 
 #===============================================================================
@@ -48,11 +48,11 @@
 #===============================================================================
 
    printf '#!/bin/sh\ncase "$*" in *version_info\\ \\<*) exit 1;; *print*) echo 3.9.6;; esac\n' > "$FAKE/python-old"; chmod +x "$FAKE/python-old"
-   OUT="$(AIOS_INSTALLER_PYTHONS="$FAKE/python-old /nowhere/python3" SH "$D" "$C" 2>&1)"; assert_eq "$?" "3" "old Python: exit 3"
+   OUT="$(AIBOS_INSTALLER_PYTHONS="$FAKE/python-old /nowhere/python3" SH "$D" "$C" 2>&1)"; assert_eq "$?" "3" "old Python: exit 3"
    assert_contains "$OUT" "Python 3.11 or newer is required, found: 3.9.6 ($FAKE/python-old)" "old Python: found version"
    assert_contains "$OUT" "brew install python" "old Python: a way"
    assert_contains "$OUT" "Nothing has been installed." "old Python: nothing installed"
-   OUT="$(AIOS_INSTALLER_PYTHONS="/nowhere/python3" SH "$D" "$C" 2>&1)"; assert_eq "$?" "3" "no Python: exit 3"
+   OUT="$(AIBOS_INSTALLER_PYTHONS="/nowhere/python3" SH "$D" "$C" 2>&1)"; assert_eq "$?" "3" "no Python: exit 3"
    assert_contains "$OUT" "found: none" "no Python: none"
    nothing_written "Python"
 
@@ -73,9 +73,9 @@
 #===============================================================================
 
    printf 'tampered' >> "$SANDBOX/bad.tar.gz"; cat "$ASSET" >> "$SANDBOX/bad.tar.gz"
-   OUT="$(AIOS_INSTALLER_ASSET="$SANDBOX/bad.tar.gz" SH "$D" "$C" 2>&1)"; assert_eq "$?" "5" "bad asset: exit 5"
+   OUT="$(AIBOS_INSTALLER_ASSET="$SANDBOX/bad.tar.gz" SH "$D" "$C" 2>&1)"; assert_eq "$?" "5" "bad asset: exit 5"
    assert_contains "$OUT" "checksum does not match" "bad asset: message"
-   OUT="$(AIOS_INSTALLER_ASSET="$SANDBOX/missing.tar.gz" SH "$D" "$C" 2>&1)"; assert_eq "$?" "5" "missing asset: exit 5"
+   OUT="$(AIBOS_INSTALLER_ASSET="$SANDBOX/missing.tar.gz" SH "$D" "$C" 2>&1)"; assert_eq "$?" "5" "missing asset: exit 5"
    nothing_written "asset"
    assert_eq "$(tmp_left)" "$BEFORE" "failures leave no temporary folder"
 
@@ -87,15 +87,15 @@
    assert_eq "$RC" "0" "start: exit 0"
    assert_contains "$OUT" 'in the browser window
 "AIBOS-Installer"' "start: message names the window"
-   assert_contains "$OUT" "read ~/.aios/install/result.json" "start: message names the result"
+   assert_contains "$OUT" "read ~/.aibos/install/result.json" "start: message names the result"
    assert_contains "$OUT" "using Python " "start: message names the python (H26)"
    assert_contains "$OUT" " at $PY " "start: message names its path (H26)"
-   assert_file "$HOME/.aios/install/test-url"
-   TOKEN="$(sed 's/.*t=//' "$HOME/.aios/install/test-url")"
+   assert_file "$HOME/.aibos/install/test-url"
+   TOKEN="$(sed 's/.*t=//' "$HOME/.aibos/install/test-url")"
    assert_not_contains "$OUT" "$TOKEN" "start: token not on stdout (IN3)"
    assert_not_contains "$OUT" "127.0.0.1" "start: address not on stdout"
    R="$(client get)"; assert_eq "$(printf '%s' "$R" | head -1)" "200" "start: the dialog answers"
-   CMD="$(for P in $(pgrep -f "aios_installer.py serve"); do ps -p "$P" -o command=; done | grep -- "--home $HOME")"
+   CMD="$(for P in $(pgrep -f "aibos_installer.py serve"); do ps -p "$P" -o command=; done | grep -- "--home $HOME")"
    assert_contains "$CMD" "--python $PY" "start: the formula passes its python on (B25)"
    client post step=1 choice=abort >/dev/null
    wait_until 10 no_installer && ok || fail "start: installer ended after abort"
@@ -107,4 +107,4 @@
 
    OUT="$(HOME=/Users/nobody-here SH "$D" "$C" 2>&1)"; assert_eq "$?" "2" "test switch with a real HOME: exit 2"
    assert_contains "$OUT" "test mode needs a HOME below the temporary folder" "test switch: message"
-   OUT="$(AIOS_HUBS= SH "$D" "$C" 2>&1)"; assert_eq "$?" "2" "test switch without AIOS_HUBS: exit 2"
+   OUT="$(AIBOS_HUBS= SH "$D" "$C" 2>&1)"; assert_eq "$?" "2" "test switch without AIBOS_HUBS: exit 2"

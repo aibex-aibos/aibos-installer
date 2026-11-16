@@ -7,6 +7,15 @@ import os
 from pathlib import Path
 
 
+def aibos_dir(home: Path) -> Path:
+    """The folder of AIBOS: ~/.aibos. On a machine with AIOS 0.6 (~/.aios a folder, no ~/.aibos) it is
+    ~/.aios until the kernel 0.7 moves it at --install and leaves ~/.aios as a link (spec 04 of the
+    kernel, Umstieg auf v0.7): nothing may create ~/.aibos before, or the changeover stops
+    (Konzept-Repo V0.7, memo 34)."""
+    new, old = home / ".aibos", home / ".aios"
+    return old if old.is_dir() and not old.is_symlink() and not new.exists() else new
+
+
 def legal_version(base: Path) -> str:
     return (base / "legal" / "VERSION").read_text(encoding="utf-8").strip()
 
@@ -24,7 +33,7 @@ def agreement_text(base: Path, lang: str) -> str:
 
 
 def consent_path(home: Path, version: str) -> Path:
-    return home / ".aios" / "consent" / f"nutzungsvertrag-{version}.json"
+    return aibos_dir(home) / "consent" / f"nutzungsvertrag-{version}.json"
 
 
 def has_consent(home: Path, version: str) -> bool:
@@ -47,7 +56,7 @@ def write_consent(home: Path, base: Path, version: str, lang: str, way: str,
         "installer": installer,
         "distribution": distribution,
     }
-    folder = home / ".aios" / "consent"
+    folder = aibos_dir(home) / "consent"
     folder.mkdir(parents=True, exist_ok=True)
     os.chmod(folder, 0o700)
     path = consent_path(home, version)
