@@ -3,8 +3,8 @@
 # usage: sh install.sh "distribution-<name>==<version>" <commit of the kernel tag>
 # POSIX sh on purpose: it must run and report on a Mac without Python 3.11 or git.
 
-VERSION="0.1.0"
-ASSET_SHA256="93f1ac4958ce97fedc98d0b0255d8d267e789aa2b9462dca65c36642f9649bc7"
+VERSION="0.2.0-rc1"
+ASSET_SHA256="698044909d0e251515110caa0d7a3db9cd48bfa06efa82ff0f61e379613974d6"
 ASSET_URL="https://github.com/aibex-aibos/aibos-installer/releases/download/v$VERSION/aibos-installer-$VERSION.tar.gz"
 
 TMPROOT=""
