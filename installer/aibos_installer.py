@@ -24,7 +24,7 @@ import server  # noqa: E402
 import steps   # noqa: E402
 import consent  # noqa: E402
 
-VERSION = "0.2.0-rc1"
+VERSION = "0.2.0"
 BASE = Path(__file__).resolve().parent.parent      # installer/, i18n/, legal/
 TIMEOUT = 30 * 60                                  # seconds without a request (spec 03)
 FALLBACK = 20                                      # seconds until the switch to the terminal (spec 03)
